@@ -17,13 +17,14 @@
 }
 
 * { box-sizing: border-box; }
-html { scroll-behavior: smooth; }
+html { scroll-behavior: smooth; overflow-x: clip; }
 body {
   margin: 0;
   color: var(--ink);
   background: var(--paper);
   font-family: "Manrope", system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
+  overflow-x: clip;
 }
 button, input { font: inherit; }
 button, a { -webkit-tap-highlight-color: transparent; }
@@ -78,13 +79,13 @@ a { color: inherit; }
 .section-heading h2 { font-size: clamp(48px, 5.5vw, 78px); }
 .section-heading > p { color: #667b73; line-height: 1.7; font-size: 14px; margin: 0; }
 .model-section .section-heading > p, .inverse > p { color: rgba(244,239,229,.64); }
-.model-grid { display: grid; grid-template-columns: 410px 1fr; border: 1px solid rgba(244,239,229,.15); min-height: 780px; }
+.model-grid { display: grid; grid-template-columns: 430px 1fr; border: 1px solid rgba(244,239,229,.15); min-height: 780px; }
 .control-panel { border-right: 1px solid rgba(244,239,229,.15); padding: 28px; }
 .panel-heading { display: flex; align-items: center; gap: 12px; margin-bottom: 18px; }
 .panel-heading h3, .simulation-toolbar h3 { font-size: 20px; margin: 1px 0 0; font-weight: 500; }
 .panel-heading small { color: rgba(244,239,229,.5); font: 9px "DM Mono"; text-transform: uppercase; }
 .step-number { width: 28px; height: 28px; display: grid; place-items: center; border: 1px solid rgba(244,239,229,.25); border-radius: 50%; font: 10px "DM Mono"; }
-.baseline-options { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+.baseline-options { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
 .baseline-card { min-height: 76px; padding: 12px; border: 1px solid rgba(244,239,229,.13); background: transparent; color: var(--paper); text-align: left; cursor: pointer; transition: .2s; }
 .baseline-card span { font-size: 11px; font-weight: 600; display: block; }
 .baseline-card small { font-size: 8px; color: rgba(244,239,229,.48); line-height: 1.4; display: block; margin-top: 7px; }
@@ -150,6 +151,42 @@ a { color: inherit; }
 .empty-diet { width: 100%; border: 1px dashed rgba(244,239,229,.17); color: rgba(244,239,229,.4); text-align: center; padding: 20px; font-size: 10px; }
 .selected-chip { display: grid; grid-template-columns: auto auto auto auto; align-items: center; gap: 8px; border: 1px solid rgba(244,239,229,.16); padding: 7px 9px; }
 .selected-chip span { font-size: 10px; }.selected-chip strong { font: 10px "DM Mono"; color: var(--acid); }.selected-chip button { width: 20px; height: 20px; padding: 0; border: 1px solid rgba(244,239,229,.18); background: transparent; color: var(--paper); cursor: pointer; }
+.distribution-editor { margin: 16px 0 30px; border: 1px solid rgba(244,239,229,.14); }
+.distribution-editor summary { padding: 12px 14px; cursor: pointer; font: 9px "DM Mono"; text-transform: uppercase; color: rgba(244,239,229,.72); }
+.distribution-editor > p { margin: 0; padding: 0 14px 10px; color: rgba(244,239,229,.42); font-size: 8px; line-height: 1.5; }
+#distribution-editor { display: grid; grid-template-columns: 1fr 1fr; max-height: 290px; overflow-y: auto; border-top: 1px solid rgba(244,239,229,.1); }
+.species-input { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 7px 9px; border-bottom: 1px solid rgba(244,239,229,.08); }
+.species-input:nth-child(odd) { border-right: 1px solid rgba(244,239,229,.08); }
+.species-input > span { display: flex; align-items: center; gap: 5px; min-width: 0; }
+.species-input i { width: 6px; height: 6px; border-radius: 50%; flex: 0 0 auto; }
+.species-input em { font-size: 8px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.species-input input { width: 45px; border: 0; border-bottom: 1px solid rgba(244,239,229,.22); background: transparent; color: var(--paper); text-align: right; font: 8px "DM Mono"; }
+.species-input small { color: rgba(244,239,229,.38); font: 7px "DM Mono"; }
+.distribution-reset { color: var(--paper); border-color: rgba(244,239,229,.18); margin: 10px 12px 12px; padding: 7px 10px; }
+.compact-heading { margin-bottom: 13px; }
+.mode-options { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; }
+.model-grid, .control-panel, .simulation-panel, .distribution-editor, .exposure-controls, .species-chart-wrap { min-width: 0; max-width: 100%; }
+.mode-button { min-height: 65px; padding: 11px; text-align: left; border: 1px solid rgba(244,239,229,.14); color: var(--paper); background: transparent; cursor: pointer; }
+.mode-button strong, .mode-button small { display: block; }.mode-button strong { font-size: 10px; }.mode-button small { margin-top: 5px; color: rgba(244,239,229,.45); font-size: 8px; }
+.mode-button.active { color: var(--ink); background: var(--acid); border-color: var(--acid); }.mode-button.active small { color: rgba(23,49,43,.62); }
+.repeat-control { display: flex; justify-content: space-between; align-items: center; margin-top: 14px; font: 9px "DM Mono"; color: rgba(244,239,229,.62); }
+.repeat-control strong { color: var(--acid); font-size: 12px; }
+#repeat-slider { width: 100%; margin-top: 8px; accent-color: var(--acid); }
+.species-chart-wrap { margin-top: 10px; }
+#species-chart { width: 100%; height: auto; min-height: 520px; overflow: visible; }
+#species-chart text { fill: rgba(244,239,229,.44); font: 8px "DM Mono"; }
+#species-chart .species-label { fill: rgba(244,239,229,.78); font-style: italic; }
+#species-chart .species-delta.up { fill: var(--acid); }
+#species-chart .species-delta.down { fill: var(--coral); }
+.comparison-key { display: flex; gap: 12px; color: rgba(244,239,229,.55); font: 8px "DM Mono"; }
+.comparison-key span { display: flex; gap: 5px; align-items: center; }.comparison-key i { width: 7px; height: 7px; border-radius: 50%; display: inline-block; }
+.comparison-key .start-dot { border: 1px solid rgba(244,239,229,.75); }.comparison-key .end-dot { background: var(--acid); }
+.species-insights { display: grid; grid-template-columns: repeat(3, 1fr); border-left: 1px solid rgba(244,239,229,.12); margin-top: 10px; }
+.species-insights article { min-height: 145px; padding: 15px; border-top: 1px solid rgba(244,239,229,.12); border-right: 1px solid rgba(244,239,229,.12); border-bottom: 1px solid rgba(244,239,229,.12); display: flex; flex-direction: column; }
+.species-insights small { color: rgba(244,239,229,.42); font: 8px "DM Mono"; text-transform: uppercase; }
+.species-insights strong { margin-top: 12px; font-size: 12px; }.species-insights span { margin-top: 5px; color: var(--acid); font: 12px "DM Mono"; }
+.species-insights p { margin: auto 0 0; color: rgba(244,239,229,.47); font-size: 8px; line-height: 1.45; }
+.species-insights .insight-empty { grid-column: 1 / -1; min-height: 100px; }
 
 .biology-section { padding: 120px 0; }
 .metabolite-grid { display: grid; grid-template-columns: 1.35fr repeat(3, 1fr); gap: 1px; background: var(--line); border: 1px solid var(--line); }
@@ -203,6 +240,7 @@ dialog::backdrop { background: rgba(16,43,37,.55); backdrop-filter: blur(5px); }
   .metabolite-grid { grid-template-columns: repeat(2, 1fr); }
   .mechanism-panel { grid-template-columns: 1fr; }
   .pathway { min-height: 260px; }
+  .species-insights { grid-template-columns: 1fr; }
 }
 
 @media (max-width: 760px) {
@@ -213,6 +251,10 @@ dialog::backdrop { background: rgba(16,43,37,.55); backdrop-filter: blur(5px); }
   .hero-vessel { width: 115%; justify-self: center; margin: -40px -7.5% -10px; }
   .section-heading { grid-template-columns: 1fr; gap: 25px; margin-bottom: 40px; }.section-heading h2 { font-size: 49px; }
   .model-section { padding: 80px 0; border-radius: 26px 26px 0 0; }.model-grid { grid-template-columns: 1fr; }.control-panel { border-right: 0; border-bottom: 1px solid rgba(244,239,229,.15); padding: 22px 16px; }.simulation-panel { padding: 22px 14px; }.food-library { max-height: 320px; }.simulation-toolbar { grid-template-columns: auto 1fr auto; }.score-block > div:last-child { display: none; }.chart-wrap { padding: 12px 7px; }.legend { display: none; }#trajectory-chart { height: 210px; }.guild-card { min-height: 100px; }.selected-diet { padding: 18px 14px; }
+  #distribution-editor { grid-template-columns: 1fr; }.species-input:nth-child(odd) { border-right: 0; }
+  .baseline-options { grid-template-columns: 1fr; }
+  #species-chart { min-height: 460px; }.species-chart-wrap { overflow-x: auto; }.species-chart-wrap #species-chart { min-width: 650px; }
+  .species-insights { grid-template-columns: 1fr; }.species-insights article { min-height: 115px; }
   .biology-section, .evidence-section { padding: 80px 0; }.metabolite-grid { grid-template-columns: 1fr; }.metabolite-card { min-height: 245px; }.pathway { grid-template-columns: repeat(2, 1fr); gap: 25px; }.path-node:not(:last-child)::after { display: none; }
   .paper-row { grid-template-columns: 50px 1fr 24px; gap: 10px; }.paper-finding, .paper-kind { display: none; }
   .boundary-card { padding: 36px 24px; }.boundary-grid { grid-template-columns: 1fr; gap: 10px; margin-top: 45px; }.site-footer { flex-direction: column; align-items: flex-start; justify-content: center; gap: 17px; padding: 35px 0; }

@@ -1,18 +1,34 @@
 # Model specification
 
-Version 0.1 · August 2026
+Version 0.2 · August 2026
 
 ## Purpose
 
 The model answers a narrow counterfactual question:
 
-> Given a starting ecological profile and a repeated dietary pattern, which functional microbial guilds would receive more or less substrate pressure, in what direction, and on what approximate timescale?
+> Given an editable 20-species starting distribution, which organisms receive more or less directional pressure from one meal or one day, and how could that pressure accumulate if the exposure is repeated?
 
 It does **not** answer “what bacteria are in my stool?” A defensible answer to that question requires a biological sample and an explicit laboratory method, ideally repeated over time.
 
-## State representation
+## Species exposure layer
 
-The model tracks eight broad guilds:
+The interactive view tracks 20 named gut species selected to span resistant-starch degradation, prebiotic response, butyrate production, mucin use, bile tolerance, proteolysis and ecological generalism. These are illustrative species proxies, not a complete community. Species and strains can perform multiple functions, and a species name does not imply a universal health effect.
+
+Three presets provide different normalized starting distributions. Every value can also be edited; input values are treated as relative parts and normalized to 100%. The starting state is therefore an assumption unless it comes from an appropriate species-resolved assay.
+
+Foods are composed as either one meal or one full day. Each portion contributes substrate features. A meal uses a smaller dose scale than a day. Species pressure combines its primary functional-guild pressure with transparent species-specific modifiers—for example resistant starch for *Ruminococcus bromii*, inulin/GOS for bifidobacteria, coffee for *Lawsonibacter asaccharolyticus*, and saturated fat/bile pressure for *Bilophila wadsworthia*.
+
+For exposure $e$, a normalized target is calculated in log space and approached with inertia:
+
+$$x^*_{i,e}=x_{i,0}\exp(q_m r_e P_i)$$
+
+$$p_{i,e}=\mathrm{norm}\left[p_{i,e-1}+a_m\left(p^*_{i,e}-p_{i,e-1}\right)\right]$$
+
+where $q_m$ and $a_m$ depend on meal/day mode, $r_e$ is a small saturating exposure ramp, and $P_i$ is dimensionless directional pressure. Repetition therefore accumulates with diminishing increments. The constants are heuristic and uncalibrated; a first exposure should be read as an ecological nudge, not an observed abundance change.
+
+## Functional representation
+
+The species distribution is also aggregated into eight broad guilds for metabolic and capacity heuristics:
 
 1. butyrate producers;
 2. bifidobacteria;
@@ -23,7 +39,7 @@ The model tracks eight broad guilds:
 7. bile-tolerant organisms;
 8. ecological generalists.
 
-Guilds are not taxonomic bins. A species may participate in multiple functions, and strain-level capabilities differ. The aggregation is used because a functional view is often more interpretable than treating isolated taxa as universally “good” or “bad”.
+Guild assignments are simplified primary roles. A species may participate in multiple functions, and strain-level capabilities differ. The aggregation is used because a functional view is often more interpretable than treating isolated taxa as universally “good” or “bad”.
 
 The displayed percentage is the guild's normalized share of the **model state**:
 
@@ -114,7 +130,9 @@ Key starting papers:
 - Taxonomic abundance is not gene expression or metabolic flux.
 - Observational diet–microbiome links are vulnerable to confounding and reverse causation.
 - “Diversity” is not intrinsically beneficial in every clinical context.
-- Guild labels simplify strain-level and context-dependent biology.
+- The 20 species are illustrative proxies, not a reconstruction of a complete microbiome.
+- Primary guild labels simplify strain-level and context-dependent biology.
+- One meal may change substrate availability or activity before stool relative abundance changes.
 - The coefficient matrix has not been prospectively validated.
 
 Any health or disease-facing use would require clinical governance, versioned datasets, external validation, calibration analysis and appropriate regulatory review.

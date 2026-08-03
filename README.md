@@ -1,19 +1,20 @@
 # MICROBIOME lab
 
-An interactive, evidence-aware model for exploring how recurring dietary inputs may nudge functional groups in the gut microbiome over time.
+An interactive, evidence-aware model for exploring how one meal or one day may apply directional pressure to a simplified gut ecosystem.
 
-The core idea is deliberately conservative: a food log cannot reconstruct a person's stool metagenome. This site therefore models **directional ecological pressure** on broad functional guilds, makes the assumptions inspectable, and keeps estimated state separate from measured biology.
+The model is deliberately conservative: a food log cannot reconstruct a person's stool metagenome, and a single meal does not imply an instantly measurable abundance shift. The site keeps estimated ecological pressure separate from measured biology.
 
-## What the first release does
+## What v0.2 does
 
-- Builds a recurring diet from 23 foods and food matrices.
-- Converts servings into substrate features such as resistant starch, inulin, GOS, beta-glucan, pectin, polyphenols, fermented-food exposure, animal protein and saturated fat.
-- Simulates 28 days of saturating, lagged change from three starting ecologies.
-- Shows normalized guild composition, percentage-point changes, an ecosystem-capacity heuristic, modeled SCFA pool shares and relative metabolic potentials.
-- Links model assumptions to human interventions, dense longitudinal studies and large metagenomic cohorts, including ZOE PREDICT work.
+- Composes one meal or one day from 23 foods and food matrices.
+- Starts from one of three presets or an editable 20-species relative distribution.
+- Repeats the same exposure 1–10 times with saturating, baseline-dependent dynamics.
+- Shows trajectories for the strongest responders and a start-versus-model comparison for all 20 species.
+- Surfaces the largest modeled gain, loss and direct food pressure.
+- Retains functional-guild, SCFA-share, butyrate-potential and proteolytic-pressure heuristics.
 - Stores the scenario only in the visitor's browser. No personal or health data is transmitted.
 
-Read [MODEL.md](MODEL.md) for the equations, boundaries and evidence interpretation.
+Read [MODEL.md](MODEL.md) for equations, assumptions, limitations and the evidence ladder.
 
 ## Run locally
 
@@ -29,16 +30,17 @@ Then open `http://localhost:8000`.
 
 ```bash
 npm test
+npm run check
 ```
 
 ## Deploy
 
-The included GitHub Actions workflow publishes the static project to GitHub Pages on every push to `main`. In the repository settings, set **Pages → Source** to **GitHub Actions** once.
+The included GitHub Actions workflow tests and publishes the static project to GitHub Pages on every push to `main`.
 
 ## Scientific boundary
 
-This is an educational counterfactual model, not a diagnostic device, medical advice or a validated predictor of an individual's microbiome. Guild percentages are normalized model states. Metabolic values are indices or relative modeled shares, not laboratory concentrations. Stool abundance also does not directly equal microbial activity or mucosal ecology.
+This is an educational counterfactual model, not a diagnostic device, medical advice, or a validated predictor of an individual's microbiome. Species percentages are normalized model states. Metabolic values are indices or relative modeled shares, not laboratory concentrations.
 
 ## License
 
-MIT for code. Scientific papers remain the property of their respective publishers and authors.
+MIT for code. Scientific papers remain the property of their publishers and authors.

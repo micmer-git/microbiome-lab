@@ -56,3 +56,49 @@ test("dominant pathways reflect the selected substrate", () => {
   assert.equal(model.dominantPathway(rs).key, "resistant");
   assert.equal(model.dominantPathway(fermented).key, "fermented");
 });
+
+test("species explorer contains exactly 20 normalized species", () => {
+  assert.equal(Object.keys(model.SPECIES).length, 20);
+  for (const id of Object.keys(model.BASELINES)) {
+    const baseline = model.speciesBaseline(id);
+    assert.ok(Math.abs(Object.values(baseline).reduce((a, b) => a + b, 0) - 1) < 1e-10);
+  }
+});
+
+test("an empty exposure preserves the starting species distribution", () => {
+  const result = model.simulateExposure({}, "typical", "meal", 5);
+  for (const point of result.trajectory) {
+    for (const key of Object.keys(model.SPECIES)) assert.equal(point.species[key], result.baselineSpecies[key]);
+  }
+});
+
+test("repeated resistant-starch exposure accumulates and saturates", () => {
+  const result = model.simulateExposure({ "cooled-potato": 1 }, "typical", "meal", 5);
+  const start = result.trajectory[0].species.ruminococcus;
+  const one = result.trajectory[1].species.ruminococcus;
+  const four = result.trajectory[4].species.ruminococcus;
+  const five = result.trajectory[5].species.ruminococcus;
+  assert.ok(one > start);
+  assert.ok(five > four);
+  assert.ok(five - four < one - start);
+});
+
+test("custom species distributions are normalized and retained as the start", () => {
+  const custom = Object.fromEntries(Object.keys(model.SPECIES).map(key => [key, key === "akkermansia" ? 50 : 1]));
+  const result = model.simulateExposure({ berries: 1 }, "typical", "meal", 1, custom);
+  assert.ok(result.trajectory[0].species.akkermansia > .7);
+  assert.ok(Math.abs(Object.values(result.trajectory[0].species).reduce((a, b) => a + b, 0) - 1) < 1e-10);
+});
+
+test("extreme meal and day exposures stay finite, positive and normalized", () => {
+  const selection = Object.fromEntries(model.FOODS.map(food => [food.id, 6]));
+  for (const mode of ["meal", "day"]) {
+    const result = model.simulateExposure(selection, "lowFiber", mode, 10);
+    for (const point of result.trajectory) {
+      const values = Object.values(point.species);
+      assert.ok(values.every(value => Number.isFinite(value) && value > 0));
+      assert.ok(Math.abs(values.reduce((a, b) => a + b, 0) - 1) < 1e-10);
+      assert.ok(point.capacity >= 22 && point.capacity <= 91);
+    }
+  }
+});

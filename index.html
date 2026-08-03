@@ -27,15 +27,15 @@
     <main id="top">
       <section class="hero section-shell">
         <div class="hero-copy">
-          <p class="eyebrow">A living systems experiment · v0.1</p>
+          <p class="eyebrow">A living systems experiment · v0.2</p>
           <h1>Your gut is an <em>ecosystem</em>, not a score.</h1>
           <p class="hero-lede">
-            Add foods. Watch substrates move through microbial guilds. Explore how a dietary
-            pattern could reshape community balance and metabolic output over time.
+            Build one meal or one day. See the directional nudge across 20 gut species, then repeat
+            the same exposure to explore how baseline-dependent ecological pressure may accumulate.
           </p>
           <div class="hero-actions">
-            <a class="primary-button" href="#model">Build a diet scenario <span>↓</span></a>
-            <button class="text-button" id="load-demo" type="button">Load the plant-diverse demo</button>
+            <a class="primary-button" href="#model">Build an exposure <span>↓</span></a>
+            <button class="text-button" id="load-demo" type="button">Load the fibre-rich meal</button>
           </div>
           <div class="trust-line">
             <span>Human studies</span><b></b><span>Mechanism-aware</span><b></b><span>Uncertainty shown</span>
@@ -58,12 +58,12 @@
         <div class="section-shell">
           <div class="section-heading">
             <div>
-              <p class="eyebrow">01 · Diet → ecology</p>
-              <h2>Compose a week.<br />Simulate four.</h2>
+              <p class="eyebrow">01 · Exposure → ecology</p>
+              <h2>Build once.<br />Repeat it.</h2>
             </div>
             <p>
-              Servings per week are converted into substrate pressure. The model estimates direction
-              and relative magnitude—not your actual stool composition.
+              Compose one meal or one day, choose a starting species distribution, and repeat the
+              exposure up to ten times. This models directional pressure—not measured abundance.
             </p>
           </div>
 
@@ -85,9 +85,29 @@
                 </button>
               </div>
 
+              <details class="distribution-editor">
+                <summary>Edit the 20-species starting distribution</summary>
+                <p>Enter relative parts. Values are normalized to 100% automatically.</p>
+                <div id="distribution-editor"></div>
+                <button class="ghost-button distribution-reset" id="distribution-reset" type="button">Use preset values</button>
+              </details>
+
+              <div class="exposure-controls">
+                <div class="panel-heading compact-heading">
+                  <span class="step-number">2</span>
+                  <div><small>Exposure unit</small><h3>Meal or full day?</h3></div>
+                </div>
+                <div class="mode-options" id="mode-options" role="radiogroup" aria-label="Exposure unit">
+                  <button class="mode-button active" data-mode="meal" role="radio" aria-checked="true" type="button"><strong>One meal</strong><small>A smaller ecological pulse</small></button>
+                  <button class="mode-button" data-mode="day" role="radio" aria-checked="false" type="button"><strong>One day</strong><small>A full-day substrate mix</small></button>
+                </div>
+                <label class="repeat-control" for="repeat-slider"><span>Repeat this exposure</span><strong><span id="repeat-count">5</span>×</strong></label>
+                <input id="repeat-slider" type="range" min="1" max="10" value="5" step="1" />
+              </div>
+
               <div class="panel-heading food-heading">
-                <span class="step-number">2</span>
-                <div><small>Recurring diet</small><h3>Add foods</h3></div>
+                <span class="step-number">3</span>
+                <div><small>Food input</small><h3>Add portions</h3></div>
                 <span class="plant-counter"><strong id="plant-count">0</strong> plants</span>
               </div>
               <label class="search-box">
@@ -102,11 +122,11 @@
               <div class="simulation-toolbar">
                 <div>
                   <p class="eyebrow">Modelled state</p>
-                  <h3>Day <span id="day-label">28</span></h3>
+                  <h3>Exposure <span id="exposure-label">5</span> of <span id="exposure-total">5</span></h3>
                 </div>
                 <label class="day-control">
-                  <span class="sr-only">Simulation day</span>
-                  <input id="day-slider" type="range" min="0" max="28" value="28" step="1" />
+                  <span class="sr-only">Displayed exposure</span>
+                  <input id="exposure-slider" type="range" min="0" max="5" value="5" step="1" />
                 </label>
                 <button class="icon-button" id="reset-button" type="button" aria-label="Reset scenario" title="Reset scenario">↺</button>
               </div>
@@ -116,31 +136,39 @@
                   <div class="score-ring" id="capacity-ring" style="--score: 62">
                     <strong id="capacity-score">62</strong><span>/100</span>
                   </div>
-                  <div><small>Ecosystem capacity</small><p id="capacity-copy">A balanced starting point with room to widen substrate diversity.</p></div>
+                  <div><small>Functional capacity heuristic</small><p id="capacity-copy">A balanced starting point with room to widen substrate diversity.</p></div>
                 </div>
                 <div class="delta-pill neutral" id="capacity-delta">baseline</div>
               </div>
 
               <div class="chart-wrap">
                 <div class="chart-header">
-                  <div><small>Community trajectory</small><strong id="chart-title">Functional guild abundance</strong></div>
+                  <div><small>Repeated exposure trajectory</small><strong id="chart-title">Largest species responders</strong></div>
                   <div class="legend" id="chart-legend"></div>
                 </div>
-                <svg id="trajectory-chart" viewBox="0 0 720 280" role="img" aria-label="Modelled microbial guild abundance over 28 days"></svg>
+                <svg id="trajectory-chart" viewBox="0 0 720 280" role="img" aria-label="Modelled species abundance across repeated exposures"></svg>
               </div>
 
-              <div class="guild-grid" id="guild-grid"></div>
+              <div class="chart-wrap species-chart-wrap">
+                <div class="chart-header">
+                  <div><small>All 20 species</small><strong>Starting distribution → selected exposure</strong></div>
+                  <div class="comparison-key"><span><i class="start-dot"></i>start</span><span><i class="end-dot"></i>modelled</span></div>
+                </div>
+                <svg id="species-chart" viewBox="0 0 720 620" role="img" aria-label="Comparison of starting and modelled distribution for 20 gut species"></svg>
+              </div>
+
+              <div class="species-insights" id="species-insights"></div>
 
               <div class="uncertainty-note">
                 <span class="uncertainty-icon">±</span>
-                <p><strong>Wide uncertainty by design.</strong> Without longitudinal shotgun metagenomics, person-specific responses can exceed the displayed diet effect. Values are scenario estimates, not measurements.</p>
+                <p><strong>Pressure, not a stool-test forecast.</strong> A meal may alter substrates and activity before relative abundance moves. The species shifts are normalized scenario estimates; person-specific variation can exceed the displayed effect.</p>
               </div>
             </section>
           </div>
 
           <div class="selected-diet" id="selected-diet">
             <div class="selected-heading">
-              <div><p class="eyebrow">Your recurring week</p><h3 id="diet-summary">No foods added yet</h3></div>
+              <div><p class="eyebrow">Your selected exposure</p><h3 id="diet-summary">No foods added yet</h3></div>
               <button class="text-button" id="clear-foods" type="button">Clear all</button>
             </div>
             <div class="selected-list" id="selected-list"></div>
@@ -237,7 +265,7 @@
     <footer class="site-footer section-shell">
       <div class="brand"><span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i></span><span>MICROBIOME<sup>lab</sup></span></div>
       <p>Built as an open, inspectable model. Biology first; certainty earned.</p>
-      <a href="https://github.com/micmer/microbiome" rel="noreferrer">View source ↗</a>
+      <a href="https://github.com/micmer-git/microbiome-lab" rel="noreferrer">View source ↗</a>
     </footer>
 
     <dialog id="about-dialog">
@@ -246,7 +274,7 @@
       <h2>A map, not the territory.</h2>
       <p>This interactive model translates dietary features into directional pressures on functional microbial guilds. It is designed for learning and hypothesis-building, with conservative claims and inspectable assumptions.</p>
       <p>Percentages are normalized model states—not predictions from a validated clinical algorithm. A person’s microbiome is also shaped by baseline ecology, medication, transit time, age, geography, illness and many unobserved variables.</p>
-      <a class="primary-button" href="https://github.com/micmer/microbiome/blob/main/MODEL.md" target="_blank" rel="noreferrer">Read the model specification <span>↗</span></a>
+      <a class="primary-button" href="https://github.com/micmer-git/microbiome-lab/blob/main/MODEL.md" target="_blank" rel="noreferrer">Read the model specification <span>↗</span></a>
     </dialog>
 
     <script src="model.js"></script>
