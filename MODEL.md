@@ -1,6 +1,6 @@
 # Model specification
 
-Version 0.2 · August 2026
+Version 0.3 · August 2026
 
 ## Purpose
 
@@ -59,6 +59,17 @@ where $d_f$ is the daily feature exposure. This is a modeling choice, not an est
 
 Unique plant foods add a small breadth term separately from serving quantity. This prevents twenty servings of one food from being treated like twenty distinct ecological substrates.
 
+## Meal atlas and scenario scores
+
+The interface includes 30 bilingual meal presets spanning breakfasts, lunches, dinners, snacks and Western-style comfort or takeaway meals. They are editable starting points, not recommendations or fixed nutritional prescriptions.
+
+Two 0–100 heuristics summarize only the modeled food-feature mix:
+
+- **microbiome variety** combines unique plant sources with the breadth of distinct fermentable substrate features;
+- **microbiome support** combines positive carbohydrate, polyphenol and fermented-food pressures and subtracts modeled low-fibre, saturated-fat and processing pressure.
+
+Both scores are bounded display indices. They are not validated clinical endpoints, diet-quality scores or estimates of alpha diversity. The “top responders” shown on a meal card are the two species receiving the largest positive model coefficient under a mixed starting ecology; they are not organisms proven to increase in every person.
+
 ## Ecological update
 
 Feature pressure is mapped to guild-specific directional coefficients $\beta_{f,g}$. Coefficients encode the direction and relative strength of evidence-backed hypotheses; they are not clinical effect sizes.
@@ -107,6 +118,8 @@ Rules prioritize human evidence:
 2. dense longitudinal sampling for within-person variability;
 3. large shotgun-metagenomic cohorts for reproducible associations;
 4. mechanistic culture, metabolomic and cross-feeding evidence for biological plausibility.
+
+The species detail view displays digestion, blood/metabolic, immune and neuroactive domains. Missing domains are marked **not established** rather than inferred. Evidence badges distinguish human intervention, mechanistic, association, preclinical and strain-specific findings. Species abundance is not equivalent to metabolite production or administration of a cultured organism. In particular, microbial production or transformation of neuroactive compounds does not demonstrate a meal-to-mood effect, and intestinal dopamine does not cross the blood–brain barrier.
 
 Key starting papers:
 

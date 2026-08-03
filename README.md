@@ -4,15 +4,19 @@ An interactive, evidence-aware model for exploring how one meal or one day may a
 
 The model is deliberately conservative: a food log cannot reconstruct a person's stool metagenome, and a single meal does not imply an instantly measurable abundance shift. The site keeps estimated ecological pressure separate from measured biology.
 
-## What v0.2 does
+## What v0.3 does
 
-- Composes one meal or one day from 23 foods and food matrices.
+- Works in English or Italian and composes one meal or one day from 46 foods and food matrices.
+- Includes an atlas of 30 Western-style meal examples, each with transparent variety and microbiome-support scenario scores.
 - Starts from one of three presets or an editable 20-species relative distribution.
 - Repeats the same exposure 1–10 times with saturating, baseline-dependent dynamics.
+- Shows an animated, clickable 20-species community; each species opens an evidence-graded digestion, metabolic, immune and neuroactive profile.
 - Shows trajectories for the strongest responders and a start-versus-model comparison for all 20 species.
 - Surfaces the largest modeled gain, loss and direct food pressure.
 - Retains functional-guild, SCFA-share, butyrate-potential and proteolytic-pressure heuristics.
 - Stores the scenario only in the visitor's browser. No personal or health data is transmitted.
+
+The meal scores rank scenarios inside this simplified model. They are not diet-quality or health scores. Neuroactive-molecule notes do not imply that gut dopamine reaches the brain or that a meal changes mood.
 
 Read [MODEL.md](MODEL.md) for equations, assumptions, limitations and the evidence ladder.
 

@@ -46,6 +46,8 @@ a { color: inherit; }
 .site-header nav a { text-decoration: none; position: relative; }
 .site-header nav a::after { content: ""; height: 1px; position: absolute; left: 0; right: 100%; bottom: -5px; background: currentColor; transition: right .25s; }
 .site-header nav a:hover::after { right: 0; }
+.header-actions { display: flex; align-items: center; gap: 8px; }
+.language-button { border: 0; background: transparent; color: var(--ink); padding: 9px 11px; cursor: pointer; font: 500 9px "DM Mono"; text-transform: uppercase; letter-spacing: .08em; }
 .ghost-button, .text-button, .icon-button { border: 0; background: transparent; cursor: pointer; }
 .ghost-button { border: 1px solid var(--line); border-radius: 99px; padding: 10px 17px; font-size: 12px; }
 .ghost-button:hover { background: rgba(255,255,255,.45); }
@@ -172,6 +174,29 @@ a { color: inherit; }
 .repeat-control { display: flex; justify-content: space-between; align-items: center; margin-top: 14px; font: 9px "DM Mono"; color: rgba(244,239,229,.62); }
 .repeat-control strong { color: var(--acid); font-size: 12px; }
 #repeat-slider { width: 100%; margin-top: 8px; accent-color: var(--acid); }
+.meal-library-button { width: 100%; display: flex; justify-content: space-between; align-items: center; margin-top: 14px; padding: 12px 13px; border: 1px solid rgba(244,239,229,.25); background: rgba(244,239,229,.05); color: var(--paper); cursor: pointer; font-size: 10px; }
+.meal-library-button span { color: var(--acid); }
+.meal-score-strip { display: grid; grid-template-columns: 1fr 1fr auto; gap: 18px; align-items: center; border-top: 1px solid rgba(244,239,229,.12); border-bottom: 1px solid rgba(244,239,229,.12); padding: 14px 0; margin-bottom: 10px; }
+.meal-score-strip > div { display: grid; grid-template-columns: 1fr auto auto; gap: 4px; align-items: baseline; }
+.meal-score-strip small { color: rgba(244,239,229,.5); font: 8px "DM Mono"; text-transform: uppercase; }.meal-score-strip strong { font: 18px "DM Mono"; }.meal-score-strip span { color: rgba(244,239,229,.4); font: 7px "DM Mono"; }
+.meal-score-strip i { grid-column: 1 / -1; height: 3px; background: rgba(244,239,229,.1); }.meal-score-strip b { display: block; height: 100%; width: 0; background: var(--acid); transition: width .35s; }
+.meal-score-strip p { max-width: 150px; margin: 0; color: rgba(244,239,229,.4); font: 8px/1.4 "DM Mono"; }
+.community-wrap { border: 1px solid rgba(244,239,229,.13); padding: 18px; margin-bottom: 10px; background: radial-gradient(circle at 50% 50%, rgba(223,255,115,.035), transparent 58%); overflow: hidden; }
+.community-wrap .chart-header p { max-width: 330px; margin: 0; color: rgba(244,239,229,.45); font-size: 8px; line-height: 1.5; }
+#community-chart { width: 100%; height: auto; min-height: 380px; }
+#community-chart .community-field { fill: url(#community-core); }
+#community-chart .community-orbit { fill: none; stroke: rgba(244,239,229,.12); stroke-dasharray: 3 7; transform-origin: 360px 215px; animation: rotate 32s linear infinite; }
+#community-chart .community-center circle { fill: rgba(244,239,229,.07); stroke: rgba(244,239,229,.22); }
+#community-chart .community-center text { fill: rgba(244,239,229,.74); font: 8px "DM Mono"; text-transform: uppercase; }
+.community-node { cursor: pointer; outline: none; }
+.community-node .node-core { transition: transform .28s, opacity .28s; transform-box: fill-box; transform-origin: center; }
+.community-node:hover .node-core, .community-node:focus .node-core { transform: scale(1.14); }
+.community-node .node-halo { fill: none; stroke-width: 1.5; opacity: .12; transform-box: fill-box; transform-origin: center; }
+.community-node.up .node-halo, .community-node.down .node-halo { animation: community-pulse 2.8s ease-out infinite; animation-delay: var(--pulse-delay); }
+.community-node.down .node-core { opacity: .7; }.community-node .node-glint { fill: rgba(244,239,229,.55); pointer-events: none; }
+.community-node text { fill: rgba(244,239,229,.72); font: italic 7px "DM Mono"; pointer-events: none; }
+@keyframes community-pulse { 0%, 30% { opacity: .38; transform: scale(.9); } 75%, 100% { opacity: 0; transform: scale(1.28); } }
+.species-chart-row { cursor: pointer; outline: none; }.species-chart-row:hover .species-label, .species-chart-row:focus .species-label { fill: var(--acid) !important; }
 .species-chart-wrap { margin-top: 10px; }
 #species-chart { width: 100%; height: auto; min-height: 520px; overflow: visible; }
 #species-chart text { fill: rgba(244,239,229,.44); font: 8px "DM Mono"; }
@@ -232,6 +257,23 @@ a { color: inherit; }
 
 dialog { width: min(600px, calc(100% - 32px)); color: var(--paper); background: var(--deep); border: 0; padding: 50px; box-shadow: 0 35px 100px rgba(0,0,0,.35); }
 dialog::backdrop { background: rgba(16,43,37,.55); backdrop-filter: blur(5px); } dialog h2 { font-size: 48px; margin-bottom: 24px; } dialog p:not(.eyebrow) { color: rgba(244,239,229,.68); line-height: 1.7; font-size: 12px; } dialog .primary-button { background: var(--acid); color: var(--ink); margin-top: 24px; } dialog .primary-button span { color: var(--ink); }.dialog-close { position: absolute; right: 20px; top: 16px; border: 0; background: transparent; color: var(--paper); font-size: 28px; cursor: pointer; }
+.meal-dialog { width: min(1160px, calc(100% - 32px)); max-height: min(88vh, 900px); padding: 44px; }
+.meal-dialog h2 { font-size: clamp(38px, 5vw, 68px); margin-bottom: 12px; }.meal-dialog > p:not(.eyebrow) { max-width: 720px; }
+.meal-dialog-filters { display: flex; flex-wrap: wrap; gap: 6px; margin: 24px 0 16px; }.meal-dialog-filters .filter-button.active { background: var(--acid); border-color: var(--acid); color: var(--ink); }
+.meal-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); border-left: 1px solid rgba(244,239,229,.13); border-top: 1px solid rgba(244,239,229,.13); }
+.meal-card { min-height: 245px; padding: 18px; border-right: 1px solid rgba(244,239,229,.13); border-bottom: 1px solid rgba(244,239,229,.13); display: flex; flex-direction: column; }
+.meal-card header small { display: block; color: rgba(244,239,229,.42); font: 8px "DM Mono"; text-transform: uppercase; }.meal-card header strong { display: block; margin-top: 7px; font-size: 14px; }
+.meal-card > p { min-height: 33px; margin: 10px 0; color: rgba(244,239,229,.48) !important; font-size: 8px !important; line-height: 1.45 !important; }
+.meal-card-scores { display: flex; gap: 12px; border-top: 1px solid rgba(244,239,229,.1); padding-top: 10px; }.meal-card-scores span { color: rgba(244,239,229,.5); font: 7px "DM Mono"; }.meal-card-scores b { color: var(--acid); font-size: 11px; }
+.meal-loves { display: flex; flex-wrap: wrap; align-items: center; gap: 7px; margin: 13px 0; }.meal-loves > small { width: 100%; color: rgba(244,239,229,.4); font: 7px "DM Mono"; text-transform: uppercase; }.meal-loves span { display: flex; align-items: center; gap: 4px; font-size: 8px; }.meal-loves i { width: 6px; height: 6px; border-radius: 50%; }
+.meal-card button { margin-top: auto; border: 1px solid rgba(244,239,229,.22); background: transparent; color: var(--paper); padding: 9px; cursor: pointer; font: 8px "DM Mono"; text-transform: uppercase; }.meal-card button:hover { background: var(--acid); color: var(--ink); border-color: var(--acid); }
+.species-dialog { width: min(820px, calc(100% - 32px)); max-height: 88vh; padding: 44px; }
+.species-dialog-heading { display: flex; gap: 18px; align-items: flex-start; }.species-dialog-heading > i { width: 24px; height: 24px; border-radius: 50%; flex: 0 0 auto; margin-top: 6px; }.species-dialog-heading h2 { font-size: clamp(31px, 5vw, 52px); line-height: .96; margin: 0 0 10px; }.species-dialog-heading p { margin: 0; }
+.species-dialog-stats { display: grid; grid-template-columns: 1fr 1fr; margin: 28px 0; border-top: 1px solid rgba(244,239,229,.15); border-left: 1px solid rgba(244,239,229,.15); }.species-dialog-stats > div { padding: 15px; border-right: 1px solid rgba(244,239,229,.15); border-bottom: 1px solid rgba(244,239,229,.15); }.species-dialog-stats small, .species-facts small { display: block; color: rgba(244,239,229,.45); font: 8px "DM Mono"; text-transform: uppercase; }.species-dialog-stats strong { display: block; margin-top: 7px; font: 20px "DM Mono"; }.species-dialog-stats strong.positive { color: var(--acid); }.species-dialog-stats strong.negative { color: var(--coral); }
+.species-facts { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 28px; }.species-facts p { margin: 6px 0 0; }
+.species-dialog h3 { font-size: 14px; margin: 0 0 10px; }.effect-list { border-top: 1px solid rgba(244,239,229,.14); }.effect-list article { padding: 14px 0; border-bottom: 1px solid rgba(244,239,229,.14); }.effect-list header { display: flex; justify-content: space-between; gap: 10px; }.effect-list header span { font: 9px "DM Mono"; text-transform: uppercase; }.effect-list header b { border: 1px solid rgba(244,239,229,.22); border-radius: 99px; padding: 4px 7px; font: 7px "DM Mono"; text-transform: uppercase; }.effect-list .evidence-human { color: var(--acid); border-color: rgba(223,255,115,.4); }.effect-list .evidence-preclinical, .effect-list .evidence-association { color: var(--ochre); }.effect-list .evidence-none { color: rgba(244,239,229,.5); }.effect-list p { margin: 8px 0 0; font-size: 9px !important; }
+.neuro-caution { margin-top: 18px; padding: 15px; border: 1px solid rgba(157,147,232,.35); background: rgba(157,147,232,.07); }.neuro-caution strong { font: 9px "DM Mono"; text-transform: uppercase; }.neuro-caution p { margin: 6px 0 0; font-size: 9px !important; }
+.species-dialog-content > a, #species-dialog-content > a { display: inline-block; margin-top: 18px; color: var(--acid); font: 9px "DM Mono"; text-transform: uppercase; }
 
 @media (max-width: 1050px) {
   .hero { grid-template-columns: 1fr 1fr; min-height: 670px; }
@@ -241,11 +283,12 @@ dialog::backdrop { background: rgba(16,43,37,.55); backdrop-filter: blur(5px); }
   .mechanism-panel { grid-template-columns: 1fr; }
   .pathway { min-height: 260px; }
   .species-insights { grid-template-columns: 1fr; }
+  .meal-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 
 @media (max-width: 760px) {
   .section-shell, .site-header { width: min(100% - 30px, 1440px); }
-  .site-header { height: 70px; }.site-header nav { display: none; }.ghost-button { padding: 8px 12px; }
+  .site-header { height: 70px; }.site-header nav { display: none; }.ghost-button { padding: 8px 12px; }.language-button { padding: 8px 5px; }
   .hero { grid-template-columns: 1fr; padding-top: 70px; overflow: hidden; }
   .hero-copy { z-index: 2; }.hero h1 { font-size: 57px; }.hero-lede { font-size: 15px; }.hero-actions { align-items: flex-start; flex-direction: column; }.trust-line { margin-top: 38px; gap: 8px; }
   .hero-vessel { width: 115%; justify-self: center; margin: -40px -7.5% -10px; }
@@ -255,6 +298,9 @@ dialog::backdrop { background: rgba(16,43,37,.55); backdrop-filter: blur(5px); }
   .baseline-options { grid-template-columns: 1fr; }
   #species-chart { min-height: 460px; }.species-chart-wrap { overflow-x: auto; }.species-chart-wrap #species-chart { min-width: 650px; }
   .species-insights { grid-template-columns: 1fr; }.species-insights article { min-height: 115px; }
+  .meal-score-strip { grid-template-columns: 1fr 1fr; }.meal-score-strip p { grid-column: 1 / -1; max-width: none; }
+  .community-wrap { padding: 12px 5px; }.community-wrap .chart-header { display: block; padding: 0 7px; }.community-wrap .chart-header p { margin-top: 7px; }.community-node text { display: none; }#community-chart { min-height: 300px; }
+  .meal-dialog, .species-dialog { padding: 38px 18px 22px; }.meal-grid { grid-template-columns: 1fr; }.meal-card { min-height: 220px; }.species-facts { grid-template-columns: 1fr; gap: 12px; }
   .biology-section, .evidence-section { padding: 80px 0; }.metabolite-grid { grid-template-columns: 1fr; }.metabolite-card { min-height: 245px; }.pathway { grid-template-columns: repeat(2, 1fr); gap: 25px; }.path-node:not(:last-child)::after { display: none; }
   .paper-row { grid-template-columns: 50px 1fr 24px; gap: 10px; }.paper-finding, .paper-kind { display: none; }
   .boundary-card { padding: 36px 24px; }.boundary-grid { grid-template-columns: 1fr; gap: 10px; margin-top: 45px; }.site-footer { flex-direction: column; align-items: flex-start; justify-content: center; gap: 17px; padding: 35px 0; }

@@ -1,6 +1,7 @@
 const test = require("node:test");
 const assert = require("node:assert/strict");
 const model = require("../model.js");
+const content = require("../content.js");
 
 test("every baseline is normalized", () => {
   for (const baseline of Object.values(model.BASELINES)) {
@@ -100,5 +101,33 @@ test("extreme meal and day exposures stay finite, positive and normalized", () =
       assert.ok(Math.abs(values.reduce((a, b) => a + b, 0) - 1) < 1e-10);
       assert.ok(point.capacity >= 22 && point.capacity <= 91);
     }
+  }
+});
+
+test("the preset atlas contains 30 valid bilingual meals", () => {
+  assert.equal(content.MEALS.length, 30);
+  const foodIds = new Set(model.FOODS.map(food => food.id));
+  const mealIds = new Set();
+  for (const meal of content.MEALS) {
+    assert.ok(meal.en && meal.it);
+    assert.ok(!mealIds.has(meal.id));
+    mealIds.add(meal.id);
+    assert.ok(Object.keys(meal.selection).every(id => foodIds.has(id)));
+  }
+});
+
+test("meal variety and support scores stay within their declared bounds", () => {
+  for (const meal of content.MEALS) {
+    const scores = model.calculateMealScores(meal.selection, "meal");
+    assert.ok(scores.variety >= 0 && scores.variety <= 100);
+    assert.ok(scores.support >= 5 && scores.support <= 95);
+  }
+});
+
+test("every modeled species has an evidence profile and source", () => {
+  assert.deepEqual(Object.keys(content.SPECIES_INFO).sort(), Object.keys(model.SPECIES).sort());
+  for (const info of Object.values(content.SPECIES_INFO)) {
+    assert.ok(content.SPECIES_BASES[info.base]);
+    assert.match(info.source, /^https:\/\//);
   }
 });

@@ -112,7 +112,30 @@
     { id: "red-meat", name: "Red meat", icon: "▰", group: "animal", plant: false, tags: "animal protein · saturated fat", features: { animalProtein: 1, satFat: .65, heme: .7 } },
     { id: "processed-meat", name: "Processed meat", icon: "▤", group: "animal", plant: false, tags: "protein · salt · processing", features: { animalProtein: 1, satFat: .85, processed: .7, heme: .65 } },
     { id: "cheese", name: "Aged cheese", icon: "△", group: "animal", plant: false, tags: "saturated fat · fermentation", features: { animalProtein: .6, satFat: 1, fermented: .22, dairy: .8 } },
-    { id: "upf-snack", name: "Ultra-processed snack", icon: "▧", group: "other", plant: false, tags: "low fibre · food matrix lost", features: { satFat: .55, processed: 1, refined: 1 } }
+    { id: "upf-snack", name: "Ultra-processed snack", icon: "▧", group: "other", plant: false, tags: "low fibre · food matrix lost", features: { satFat: .55, processed: 1, refined: 1 } },
+    { id: "eggs", name: "Eggs", icon: "◒", group: "animal", plant: false, tags: "animal protein · choline", features: { animalProtein: .66, satFat: .25 } },
+    { id: "chicken", name: "Chicken", icon: "▱", group: "animal", plant: false, tags: "lean animal protein", features: { animalProtein: .82, satFat: .18 } },
+    { id: "salmon", name: "Salmon", icon: "≈", group: "animal", plant: false, tags: "protein · unsaturated fat", features: { animalProtein: .76, unsatFat: .82 } },
+    { id: "white-bread", name: "White bread", icon: "▭", group: "grains", plant: true, tags: "refined starch", features: { refined: .82, plant: .16 } },
+    { id: "pasta", name: "Pasta", icon: "∽", group: "grains", plant: true, tags: "wheat starch · refined matrix", features: { refined: .58, fiber: .16, plant: .32 } },
+    { id: "brown-rice", name: "Brown rice", icon: "⋮", group: "grains", plant: true, tags: "wholegrain · fibre", features: { fiber: .42, rs: .12, plant: .68 } },
+    { id: "white-rice", name: "White rice", icon: "⋰", group: "grains", plant: true, tags: "refined starch", features: { refined: .56, rs: .05, plant: .22 } },
+    { id: "leafy-greens", name: "Leafy greens", icon: "♧", group: "vegetables", plant: true, tags: "leaf fibre · polyphenols", features: { fiber: .46, pectin: .14, polyphenol: .28, plant: 1 } },
+    { id: "tomato", name: "Tomato", icon: "●", group: "vegetables", plant: true, tags: "pectin · carotenoids", features: { fiber: .24, pectin: .34, polyphenol: .28, plant: .82 } },
+    { id: "avocado", name: "Avocado", icon: "◐", group: "fruit", plant: true, tags: "fibre · unsaturated fat", features: { fiber: .68, unsatFat: .78, plant: .92 } },
+    { id: "carrots", name: "Carrots", icon: "◇", group: "vegetables", plant: true, tags: "pectin · cell walls", features: { fiber: .44, pectin: .52, plant: .84 } },
+    { id: "peas", name: "Peas", icon: "••", group: "legumes", plant: true, tags: "fibre · GOS · starch", features: { fiber: .64, gos: .28, rs: .2, plant: .92 } },
+    { id: "pear", name: "Pear", icon: "◉", group: "fruit", plant: true, tags: "pectin · fibre", features: { fiber: .52, pectin: .76, plant: .82 } },
+    { id: "ripe-banana", name: "Ripe banana", icon: "◓", group: "fruit", plant: true, tags: "pectin · digestible starch", features: { fiber: .34, pectin: .32, plant: .72 } },
+    { id: "walnuts", name: "Walnuts", icon: "✺", group: "nuts", plant: true, tags: "polyphenols · unsaturated fat", features: { fiber: .46, polyphenol: .68, unsatFat: .78, plant: .86 } },
+    { id: "milk", name: "Milk", icon: "◧", group: "animal", plant: false, tags: "lactose · dairy", features: { dairy: 1, satFat: .28 } },
+    { id: "butter", name: "Butter", icon: "□", group: "fats", plant: false, tags: "saturated fat", features: { satFat: 1, dairy: .24 } },
+    { id: "sugary-drink", name: "Sugary drink", icon: "◇", group: "other", plant: false, tags: "free sugar · no fibre", features: { refined: 1, processed: .72 } },
+    { id: "fries", name: "French fries", icon: "▥", group: "other", plant: true, tags: "fried starch · processed", features: { refined: .7, satFat: .54, processed: .58, rs: .1, plant: .18 } },
+    { id: "pizza", name: "Pizza", icon: "△", group: "other", plant: false, tags: "refined flour · cheese · processed", features: { refined: .84, satFat: .72, processed: .66, animalProtein: .28, dairy: .46 } },
+    { id: "burger", name: "Burger", icon: "≡", group: "other", plant: false, tags: "red meat · refined bun · saturated fat", features: { animalProtein: 1, satFat: .84, refined: .56, processed: .5, heme: .58 } },
+    { id: "sweet-cereal", name: "Sweetened cereal", icon: "⌁", group: "grains", plant: true, tags: "refined grain · added sugar", features: { refined: .92, processed: .72, plant: .14 } },
+    { id: "pancakes", name: "Pancakes", icon: "═", group: "grains", plant: true, tags: "refined flour · sweet matrix", features: { refined: .82, processed: .46, satFat: .24, plant: .12 } }
   ];
 
   // Log-abundance pressure coefficients. These encode directional hypotheses, not clinical effect sizes.
@@ -205,6 +228,18 @@
     const scale = mode === "day" ? .72 : .46;
     for (const feature of Object.keys(features)) features[feature] *= scale;
     return { features, plantCount, totalPortions, totalServings: totalPortions, foods, mode };
+  }
+
+  function calculateMealScores(selection = {}, mode = "meal") {
+    const diet = aggregateExposure(selection, mode);
+    const f = diet.features;
+    const substrateKeys = ["fiber", "rs", "gos", "inulin", "pectin", "betaGlucan", "arabinoxylan", "polyphenol", "fermented"];
+    const substrateTypes = substrateKeys.filter(key => (f[key] || 0) >= .08).length;
+    const variety = round(clamp(5 + diet.plantCount * 10 + substrateTypes * 4 + Math.min(diet.foods.length, 8) * 2, 0, 100), 0);
+    const positive = 13 * Math.tanh((f.fiber || 0) / 1.5) + 8 * Math.tanh(((f.rs || 0) + (f.inulin || 0) + (f.gos || 0)) / 1.2) + 6 * Math.tanh((f.polyphenol || 0) / 1.1) + 5 * Math.tanh((f.fermented || 0) / .8) + 3 * Math.tanh((f.unsatFat || 0) / .9) + diet.plantCount * 2.2;
+    const negative = 10 * Math.tanh((f.processed || 0) / 1.2) + 8 * Math.tanh((f.refined || 0) / 1.4) + 8 * Math.tanh((f.satFat || 0) / 1.2);
+    const support = round(clamp(45 + positive - negative, 5, 95), 0);
+    return { variety, support, substrateTypes, plantCount: diet.plantCount };
   }
 
   function pressureFromDiet(diet) {
@@ -350,5 +385,5 @@
     return best;
   }
 
-  return { GUILDS, BASELINES, SPECIES, FOODS, EFFECTS, aggregateDiet, aggregateExposure, simulate, simulateExposure, dominantPathway, normalizeGuilds, normalizeSpecies, speciesBaseline, speciesToGuilds, calculateMetabolites };
+  return { GUILDS, BASELINES, SPECIES, FOODS, EFFECTS, aggregateDiet, aggregateExposure, calculateMealScores, simulate, simulateExposure, dominantPathway, normalizeGuilds, normalizeSpecies, speciesBaseline, speciesToGuilds, calculateMetabolites };
 });

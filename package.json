@@ -1,11 +1,11 @@
 {
   "name": "microbiome-lab",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "private": true,
   "description": "Evidence-aware interactive diet–microbiome model",
   "scripts": {
     "test": "node --test tests/model.test.js",
-    "check": "node --check model.js && node --check app.js"
+    "check": "node --check model.js && node --check content.js && node --check app.js"
   },
   "license": "MIT"
 }
