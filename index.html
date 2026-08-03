@@ -1,0 +1,255 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="An evidence-aware, interactive model of how dietary patterns may nudge the gut microbiome." />
+    <meta name="theme-color" content="#122b26" />
+    <title>MICROBIOME — feed the ecosystem</title>
+    <link rel="icon" href="assets/favicon.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="grain" aria-hidden="true"></div>
+    <header class="site-header">
+      <a class="brand" href="#top" aria-label="Microbiome home">
+        <span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i></span>
+        <span>MICROBIOME<sup>lab</sup></span>
+      </a>
+      <nav aria-label="Primary navigation">
+        <a href="#model">Model</a>
+        <a href="#biology">Biology</a>
+        <a href="#evidence">Evidence</a>
+      </nav>
+      <button class="ghost-button" id="about-button" type="button">What this is</button>
+    </header>
+
+    <main id="top">
+      <section class="hero section-shell">
+        <div class="hero-copy">
+          <p class="eyebrow">A living systems experiment · v0.1</p>
+          <h1>Your gut is an <em>ecosystem</em>, not a score.</h1>
+          <p class="hero-lede">
+            Add foods. Watch substrates move through microbial guilds. Explore how a dietary
+            pattern could reshape community balance and metabolic output over time.
+          </p>
+          <div class="hero-actions">
+            <a class="primary-button" href="#model">Build a diet scenario <span>↓</span></a>
+            <button class="text-button" id="load-demo" type="button">Load the plant-diverse demo</button>
+          </div>
+          <div class="trust-line">
+            <span>Human studies</span><b></b><span>Mechanism-aware</span><b></b><span>Uncertainty shown</span>
+          </div>
+        </div>
+
+        <div class="hero-vessel" aria-label="Animated representation of a microbial ecosystem">
+          <canvas id="ecosystem-canvas" width="680" height="680"></canvas>
+          <div class="vessel-core">
+            <span id="hero-diversity">62</span>
+            <small>ecosystem<br />capacity</small>
+          </div>
+          <div class="orbit-note orbit-note-a">cross-feeding</div>
+          <div class="orbit-note orbit-note-b">substrates</div>
+          <div class="orbit-note orbit-note-c">metabolites</div>
+        </div>
+      </section>
+
+      <section class="model-section" id="model">
+        <div class="section-shell">
+          <div class="section-heading">
+            <div>
+              <p class="eyebrow">01 · Diet → ecology</p>
+              <h2>Compose a week.<br />Simulate four.</h2>
+            </div>
+            <p>
+              Servings per week are converted into substrate pressure. The model estimates direction
+              and relative magnitude—not your actual stool composition.
+            </p>
+          </div>
+
+          <div class="model-grid">
+            <aside class="control-panel">
+              <div class="panel-heading">
+                <span class="step-number">1</span>
+                <div><small>Starting ecology</small><h3>Choose a baseline</h3></div>
+              </div>
+              <div class="baseline-options" id="baseline-options" role="radiogroup" aria-label="Baseline ecology">
+                <button class="baseline-card active" data-baseline="typical" role="radio" aria-checked="true" type="button">
+                  <span>Mixed diet</span><small>moderate fibre · stable</small>
+                </button>
+                <button class="baseline-card" data-baseline="plant" role="radio" aria-checked="false" type="button">
+                  <span>Plant-diverse</span><small>high fibre · resilient</small>
+                </button>
+                <button class="baseline-card" data-baseline="lowFiber" role="radio" aria-checked="false" type="button">
+                  <span>Low-fibre</span><small>low substrate · bile-tolerant</small>
+                </button>
+              </div>
+
+              <div class="panel-heading food-heading">
+                <span class="step-number">2</span>
+                <div><small>Recurring diet</small><h3>Add foods</h3></div>
+                <span class="plant-counter"><strong id="plant-count">0</strong> plants</span>
+              </div>
+              <label class="search-box">
+                <span aria-hidden="true">⌕</span>
+                <input id="food-search" type="search" placeholder="Search oats, lentils, kefir…" autocomplete="off" />
+              </label>
+              <div class="food-filters" id="food-filters" aria-label="Food filters"></div>
+              <div class="food-library" id="food-library"></div>
+            </aside>
+
+            <section class="simulation-panel" aria-live="polite">
+              <div class="simulation-toolbar">
+                <div>
+                  <p class="eyebrow">Modelled state</p>
+                  <h3>Day <span id="day-label">28</span></h3>
+                </div>
+                <label class="day-control">
+                  <span class="sr-only">Simulation day</span>
+                  <input id="day-slider" type="range" min="0" max="28" value="28" step="1" />
+                </label>
+                <button class="icon-button" id="reset-button" type="button" aria-label="Reset scenario" title="Reset scenario">↺</button>
+              </div>
+
+              <div class="simulation-summary">
+                <div class="score-block">
+                  <div class="score-ring" id="capacity-ring" style="--score: 62">
+                    <strong id="capacity-score">62</strong><span>/100</span>
+                  </div>
+                  <div><small>Ecosystem capacity</small><p id="capacity-copy">A balanced starting point with room to widen substrate diversity.</p></div>
+                </div>
+                <div class="delta-pill neutral" id="capacity-delta">baseline</div>
+              </div>
+
+              <div class="chart-wrap">
+                <div class="chart-header">
+                  <div><small>Community trajectory</small><strong id="chart-title">Functional guild abundance</strong></div>
+                  <div class="legend" id="chart-legend"></div>
+                </div>
+                <svg id="trajectory-chart" viewBox="0 0 720 280" role="img" aria-label="Modelled microbial guild abundance over 28 days"></svg>
+              </div>
+
+              <div class="guild-grid" id="guild-grid"></div>
+
+              <div class="uncertainty-note">
+                <span class="uncertainty-icon">±</span>
+                <p><strong>Wide uncertainty by design.</strong> Without longitudinal shotgun metagenomics, person-specific responses can exceed the displayed diet effect. Values are scenario estimates, not measurements.</p>
+              </div>
+            </section>
+          </div>
+
+          <div class="selected-diet" id="selected-diet">
+            <div class="selected-heading">
+              <div><p class="eyebrow">Your recurring week</p><h3 id="diet-summary">No foods added yet</h3></div>
+              <button class="text-button" id="clear-foods" type="button">Clear all</button>
+            </div>
+            <div class="selected-list" id="selected-list"></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="biology-section section-shell" id="biology">
+        <div class="section-heading inverse">
+          <div><p class="eyebrow">02 · Under the hood</p><h2>Follow the carbon.</h2></div>
+          <p>The model is a transparent causal sketch: food features become colonic substrates, guilds compete and cooperate, then metabolites emerge.</p>
+        </div>
+
+        <div class="metabolite-grid">
+          <article class="metabolite-card featured">
+            <span class="molecule" aria-hidden="true">C₄</span>
+            <small>Modelled potential</small>
+            <strong id="butyrate-potential">61</strong>
+            <h3>Butyrate</h3>
+            <p>Fuel for colonocytes; linked to epithelial and immune signalling. Production depends on both substrate and the microbes already present.</p>
+            <div class="mini-meter"><i id="butyrate-meter"></i></div>
+          </article>
+          <article class="metabolite-card">
+            <span class="molecule" aria-hidden="true">C₂</span>
+            <small>SCFA pool share</small>
+            <strong id="acetate-share">58%</strong>
+            <h3>Acetate</h3>
+            <p>A common fermentation product and cross-feeding currency used by other microbes.</p>
+          </article>
+          <article class="metabolite-card">
+            <span class="molecule" aria-hidden="true">C₃</span>
+            <small>SCFA pool share</small>
+            <strong id="propionate-share">22%</strong>
+            <h3>Propionate</h3>
+            <p>Often produced from complex carbohydrate fermentation through several pathways.</p>
+          </article>
+          <article class="metabolite-card risk-card">
+            <span class="molecule" aria-hidden="true">N/S</span>
+            <small>Relative pressure</small>
+            <strong id="proteolytic-pressure">34</strong>
+            <h3>Proteolytic products</h3>
+            <p>Amino-acid fermentation can yield branched-chain fatty acids, ammonia, phenols and indoles—chemically diverse, not uniformly harmful.</p>
+          </article>
+        </div>
+
+        <div class="mechanism-panel">
+          <div class="mechanism-copy">
+            <p class="eyebrow">Dominant pathway</p>
+            <h3 id="pathway-title">Complex carbohydrate cross-feeding</h3>
+            <p id="pathway-copy">Add foods to reveal the strongest modelled route through the ecosystem.</p>
+            <div class="confidence-row"><span>Evidence confidence</span><div class="confidence-dots" id="confidence-dots"><i></i><i></i><i></i><i></i></div><strong id="confidence-label">Moderate</strong></div>
+          </div>
+          <div class="pathway" id="pathway-visual" aria-label="Dominant biological pathway"></div>
+        </div>
+      </section>
+
+      <section class="evidence-section" id="evidence">
+        <div class="section-shell">
+          <div class="section-heading">
+            <div><p class="eyebrow">03 · Evidence ledger</p><h2>What is known.<br />What is inferred.</h2></div>
+            <p>Associations are not interventions. Stool abundance is not necessarily activity. The ledger makes those distinctions explicit.</p>
+          </div>
+          <div class="evidence-filters" id="evidence-filters" aria-label="Evidence filters"></div>
+          <div class="evidence-list" id="evidence-list"></div>
+        </div>
+      </section>
+
+      <section class="boundary-section section-shell">
+        <div class="sample-section">
+          <div class="section-heading">
+            <div><p class="eyebrow">04 · Measure the real system</p><h2>One stool sample is a frame.<br /><em>Not the film.</em></h2></div>
+            <p>Method determines meaning. Repeated samples plus time-aligned food records are far more informative for diet response than a single commercial “wellness” snapshot.</p>
+          </div>
+          <div class="sample-flow">
+            <article><span>01</span><small>Community screen</small><h3>16S rRNA</h3><p>Relative bacterial marker-gene profile. Useful for broad community structure; limited species, strain and functional resolution.</p><strong>Who may be there</strong></article>
+            <article><span>02</span><small>Genomic potential</small><h3>Shotgun metagenomics</h3><p>Species, strains and microbial genes with improved resolution. Measures encoded capacity—not which pathways are active now.</p><strong>What they could do</strong></article>
+            <article><span>03</span><small>Functional output</small><h3>Faecal metabolomics</h3><p>SCFAs, bile acids, indoles and many unknowns. Integrates diet, microbial and host chemistry after transit and absorption.</p><strong>What remains in stool</strong></article>
+            <article><span>04</span><small>Within-person inference</small><h3>Repeated time series</h3><p>Food timestamps, symptoms and multiple samples expose lag, baseline dependence and normal day-to-day variation.</p><strong>How the system changes</strong></article>
+          </div>
+        </div>
+
+        <div class="boundary-card">
+          <p class="eyebrow">Scientific boundary</p>
+          <h2>Useful counterfactual.<br />Not a diagnostic.</h2>
+          <div class="boundary-grid">
+            <div><strong>It can</strong><p>Compare dietary scenarios, expose plausible mechanisms, show lag and uncertainty, and link every rule to evidence.</p></div>
+            <div><strong>It cannot</strong><p>Identify your taxa, diagnose dysbiosis, predict disease, or replace stool metagenomics, metabolomics and clinical interpretation.</p></div>
+            <div><strong>To personalize</strong><p>Future versions can ingest repeated stool samples, food logs and covariates while separating measured values from model estimates.</p></div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer section-shell">
+      <div class="brand"><span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i></span><span>MICROBIOME<sup>lab</sup></span></div>
+      <p>Built as an open, inspectable model. Biology first; certainty earned.</p>
+      <a href="https://github.com/micmer/microbiome" rel="noreferrer">View source ↗</a>
+    </footer>
+
+    <dialog id="about-dialog">
+      <button class="dialog-close" id="dialog-close" type="button" aria-label="Close">×</button>
+      <p class="eyebrow">About the experiment</p>
+      <h2>A map, not the territory.</h2>
+      <p>This interactive model translates dietary features into directional pressures on functional microbial guilds. It is designed for learning and hypothesis-building, with conservative claims and inspectable assumptions.</p>
+      <p>Percentages are normalized model states—not predictions from a validated clinical algorithm. A person’s microbiome is also shaped by baseline ecology, medication, transit time, age, geography, illness and many unobserved variables.</p>
+      <a class="primary-button" href="https://github.com/micmer/microbiome/blob/main/MODEL.md" target="_blank" rel="noreferrer">Read the model specification <span>↗</span></a>
+    </dialog>
+
+    <script src="model.js"></script>
+    <script src="app.js"></script>
+  </body>
+</html>
