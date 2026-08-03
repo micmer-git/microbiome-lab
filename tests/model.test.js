@@ -54,8 +54,10 @@ test("more weekly servings saturate rather than scale linearly", () => {
 test("dominant pathways reflect the selected substrate", () => {
   const rs = model.aggregateDiet({ "cooled-potato": 7 });
   const fermented = model.aggregateDiet({ kefir: 7, kimchi: 7 });
+  const alcohol = model.aggregateDiet({ alcohol: 1 });
   assert.equal(model.dominantPathway(rs).key, "resistant");
   assert.equal(model.dominantPathway(fermented).key, "fermented");
+  assert.equal(model.dominantPathway(alcohol).key, "alcohol");
 });
 
 test("species explorer contains exactly 20 normalized species", () => {
@@ -129,5 +131,27 @@ test("every modeled species has an evidence profile and source", () => {
   for (const info of Object.values(content.SPECIES_INFO)) {
     assert.ok(content.SPECIES_BASES[info.base]);
     assert.match(info.source, /^https:\/\//);
+  }
+});
+
+test("guided onboarding contains 20 valid day patterns and ten stories", () => {
+  const foodIds = new Set(model.FOODS.map(food => food.id));
+  assert.equal(content.DAY_PATTERNS.length, 20);
+  assert.equal(content.QUICK_STORIES.length, 10);
+  assert.equal(content.QUICK_STORIES.filter(story => story.kind === "food").length, 5);
+  assert.equal(content.QUICK_STORIES.filter(story => story.kind === "meal").length, 5);
+  for (const item of [...content.DAY_PATTERNS, ...content.QUICK_STORIES]) {
+    assert.ok(item.en && item.it);
+    assert.ok(Object.keys(item.selection).every(id => foodIds.has(id)));
+  }
+});
+
+test("coffee, kombucha and alcohol scenarios stay bounded through ten exposures", () => {
+  for (const id of ["coffee", "kombucha", "alcohol"]) {
+    const result = model.simulateExposure({ [id]: 1 }, "typical", "meal", 10);
+    for (const point of result.trajectory) {
+      assert.ok(Math.abs(Object.values(point.species).reduce((sum, value) => sum + value, 0) - 1) < 1e-10);
+      assert.ok(Number.isFinite(point.capacity));
+    }
   }
 });

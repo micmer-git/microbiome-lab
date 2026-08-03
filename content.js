@@ -38,6 +38,57 @@
     { id: "snack-plate", type: "snack", en: "Apple, almonds & kefir", it: "Mela, mandorle e kefir", selection: { apple: 1, almonds: 1, kefir: 1 } }
   ];
 
+  const mergeMeals = (...ids) => {
+    const selection = {};
+    ids.forEach(id => {
+      const meal = MEALS.find(item => item.id === id);
+      if (!meal) return;
+      Object.entries(meal.selection).forEach(([food, portions]) => { selection[food] = (selection[food] || 0) + portions; });
+    });
+    return selection;
+  };
+
+  const DAY_PATTERNS = [
+    { id: "mediterranean", en: "Mediterranean-ish day", it: "Giornata mediterranea", meals: ["oat-berry", "chickpea-bowl", "salmon-potato"], note: { en: "Oats · chickpeas · salmon and vegetables", it: "Avena · ceci · salmone e verdure" } },
+    { id: "italian-balanced", en: "Balanced Italian day", it: "Giornata italiana bilanciata", meals: ["yogurt-apple", "tomato-pasta", "roast-chicken"], note: { en: "Yogurt and fruit · tomato pasta · roast chicken", it: "Yogurt e frutta · pasta al pomodoro · pollo arrosto" } },
+    { id: "plant-diverse", en: "Plant-diverse day", it: "Giornata vegetale varia", meals: ["pear-porridge", "lentil-soup", "veggie-chili"], note: { en: "Porridge · lentil soup · bean and lentil chilli", it: "Porridge · zuppa di lenticchie · chili di legumi" } },
+    { id: "mixed", en: "Typical mixed day", it: "Giornata mista tipica", meals: ["eggs-toast", "chicken-sandwich", "bolognese"], note: { en: "Eggs and toast · chicken sandwich · ragù pasta", it: "Uova e pane · panino al pollo · pasta al ragù" } },
+    { id: "convenience", en: "Convenience-food day", it: "Giornata pronta e veloce", meals: ["cereal-milk", "burger-meal", "pizza-meal"], note: { en: "Sweet cereal · burger meal · pizza", it: "Cereali dolci · burger · pizza" } },
+    { id: "high-protein", en: "Animal-protein day", it: "Giornata ricca di proteine animali", meals: ["bacon-eggs", "caesar", "steak-potato"], note: { en: "Bacon-style breakfast · chicken salad · steak", it: "Colazione bacon-style · Caesar · bistecca" } },
+    { id: "vegetarian", en: "Vegetarian mixed day", it: "Giornata vegetariana mista", meals: ["cocoa-yogurt", "chickpea-bowl", "beans-rice"], note: { en: "Yogurt bowl · chickpea bowl · beans and rice", it: "Yogurt bowl · bowl di ceci · fagioli e riso" } },
+    { id: "pescatarian", en: "Pescatarian day", it: "Giornata pescetariana", meals: ["avocado-toast", "salmon-salad", "salmon-potato"], note: { en: "Avocado toast · salmon salad · salmon and potato", it: "Toast avocado · insalata al salmone · salmone e patate" } },
+    { id: "low-fibre", en: "Low-fibre day", it: "Giornata povera di fibre", meals: ["bacon-eggs", "ham-cheese", "mac-cheese"], note: { en: "Eggs and white bread · ham sandwich · mac and cheese", it: "Uova e pane bianco · panino al prosciutto · mac and cheese" } },
+    { id: "family", en: "Family-style day", it: "Giornata formato famiglia", meals: ["pancakes", "chicken-rice", "roast-chicken"], note: { en: "Pancakes · chicken and rice · roast vegetables", it: "Pancake · pollo e riso · arrosto con verdure" } },
+    { id: "fast-food", en: "Fast-food day", it: "Giornata fast-food", meals: ["cereal-milk", "burger-meal", "takeaway"], note: { en: "Sweet cereal · burger and soda · takeaway", it: "Cereali dolci · burger e bibita · take-away" } },
+    { id: "legume-forward", en: "Legume-forward day", it: "Giornata ricca di legumi", meals: ["oat-berry", "lentil-soup", "bean-burrito"], note: { en: "Oats · lentils · beans and brown rice", it: "Avena · lenticchie · fagioli e riso integrale" } },
+    { id: "dairy-heavy", en: "Dairy-heavy day", it: "Giornata ricca di latticini", meals: ["yogurt-apple", "ham-cheese", "mac-cheese"], note: { en: "Yogurt · ham and cheese · creamy pasta", it: "Yogurt · prosciutto e formaggio · pasta cremosa" } },
+    { id: "italian-classic", en: "Classic Italian day", it: "Giornata italiana classica", meals: ["avocado-toast", "tomato-pasta", "bolognese"], note: { en: "Coffee and toast · tomato pasta · ragù", it: "Caffè e toast · pasta al pomodoro · ragù" } },
+    { id: "flexitarian", en: "Flexitarian day", it: "Giornata flexitariana", meals: ["kefir-smoothie", "chicken-sandwich", "veggie-chili"], note: { en: "Kefir smoothie · chicken sandwich · vegetable chilli", it: "Frullato di kefir · panino al pollo · chili vegetale" } },
+    { id: "wholegrain", en: "Wholegrain day", it: "Giornata integrale", meals: ["pear-porridge", "chickpea-bowl", "beans-rice"], note: { en: "Porridge · brown-rice bowls · legumes", it: "Porridge · bowl di riso integrale · legumi" } },
+    { id: "refined-carb", en: "Refined-carb day", it: "Giornata di carboidrati raffinati", meals: ["pancakes", "pizza-meal", "mac-cheese"], note: { en: "Pancakes · pizza · macaroni and cheese", it: "Pancake · pizza · maccheroni al formaggio" } },
+    { id: "salad-centric", en: "Salad-centric day", it: "Giornata centrata sulle insalate", meals: ["avocado-toast", "salmon-salad", "caesar"], note: { en: "Avocado toast · salmon salad · chicken salad", it: "Toast avocado · insalata al salmone · Caesar" } },
+    { id: "weekend", en: "Weekend comfort day", it: "Giornata comfort del weekend", meals: ["bacon-eggs", "pizza-meal", "steak-potato"], note: { en: "Bacon-style breakfast · pizza · steak", it: "Colazione bacon-style · pizza · bistecca" } },
+    { id: "light-snacker", en: "Light meals and snacks", it: "Pasti leggeri e spuntini", meals: ["yogurt-apple", "snack-plate", "tomato-pasta"], note: { en: "Yogurt and fruit · nuts and kefir · tomato pasta", it: "Yogurt e frutta · frutta secca e kefir · pasta al pomodoro" } }
+  ].map(pattern => ({ ...pattern, selection: mergeMeals(...pattern.meals) }));
+
+  const QUICK_STORIES = [
+    { id: "coffee", kind: "food", icon: "∿", en: "One coffee", it: "Un caffè", selection: { coffee: 1 }, note: { en: "A reproducible food–species association; not proof of a health effect.", it: "Associazione cibo–specie riproducibile; non prova un effetto sulla salute." }, source: "https://www.nature.com/articles/s41564-024-01858-9" },
+    { id: "kombucha", kind: "food", icon: "◌", en: "One kombucha", it: "Una kombucha", selection: { kombucha: 1 }, note: { en: "Small trials show modest, product-variable microbiome effects.", it: "Piccoli studi mostrano effetti modesti e variabili tra prodotti." }, source: "https://pubmed.ncbi.nlm.nih.gov/39738315/" },
+    { id: "alcohol", kind: "food", icon: "▽", en: "One alcoholic drink", it: "Una bevanda alcolica", selection: { alcohol: 1 }, note: { en: "Generic ethanol pressure; beverage type and dose matter. This is not a safe-intake recommendation.", it: "Pressione generica dell'etanolo; tipo e dose contano. Non è una raccomandazione di consumo sicuro." }, source: "https://pubmed.ncbi.nlm.nih.gov/33096423/" },
+    { id: "apple", kind: "food", icon: "○", en: "One apple", it: "Una mela", selection: { apple: 1 }, note: { en: "Pectin and polyphenol substrate pulse.", it: "Impulso di pectina e polifenoli." }, source: "https://pubmed.ncbi.nlm.nih.gov/30696735/" },
+    { id: "lentils", kind: "food", icon: "●", en: "One lentil portion", it: "Una porzione di lenticchie", selection: { lentils: 1 }, note: { en: "GOS, fibre and resistant-starch substrate pulse.", it: "Impulso di GOS, fibre e amido resistente." }, source: "https://pubmed.ncbi.nlm.nih.gov/30696735/" },
+    { id: "oat-berry-story", kind: "meal", icon: "✣", en: "Oats, berries & almonds", it: "Avena, frutti di bosco e mandorle", selection: MEALS.find(meal => meal.id === "oat-berry").selection, note: { en: "Fibre- and polyphenol-rich breakfast.", it: "Colazione ricca di fibre e polifenoli." } },
+    { id: "lentil-story", kind: "meal", icon: "◉", en: "Lentil soup & wholegrain bread", it: "Zuppa di lenticchie e pane integrale", selection: MEALS.find(meal => meal.id === "lentil-soup").selection, note: { en: "Legume and wholegrain substrate mix.", it: "Miscela di substrati da legumi e cereali integrali." } },
+    { id: "salmon-story", kind: "meal", icon: "≈", en: "Salmon, potato & broccoli", it: "Salmone, patate e broccoli", selection: MEALS.find(meal => meal.id === "salmon-potato").selection, note: { en: "Mixed animal protein, resistant starch and vegetables.", it: "Proteine animali, amido resistente e verdure." } },
+    { id: "pizza-story", kind: "meal", icon: "△", en: "Pizza & soda", it: "Pizza e bibita", selection: MEALS.find(meal => meal.id === "pizza-meal").selection, note: { en: "Refined, saturated-fat and processed-food pressure.", it: "Pressione da raffinati, grassi saturi e alimenti lavorati." } },
+    { id: "burger-story", kind: "meal", icon: "≡", en: "Burger, fries & soda", it: "Burger, patatine e bibita", selection: MEALS.find(meal => meal.id === "burger-meal").selection, note: { en: "A Western takeaway scenario, not a clinical prediction.", it: "Scenario take-away occidentale, non una previsione clinica." } }
+  ];
+
+  const STORY_UI = {
+    en: { kicker: "Start with your real routine", title: "What does your usual day look like?", intro: "Choose one of 20 preloaded day patterns. It creates a modelled starting ecology—not a stool-test result.", step1: "1 · Starting point", chooseDay: "Choose your usual day", baselineNote: "Modelled from 10 repeats of this day", step2: "2 · Try one exposure", foods: "5 foods & drinks", meals: "5 meals", step3: "3 · See the nudge", once: "After one", ten: "After 10×", start: "Start", compare: "Largest modelled species changes", fullLab: "Open this in the full lab", source: "Evidence note", disclaimer: "Directional scenario only. One meal can change substrates before stool abundance, and 10× is a repeated-exposure thought experiment." },
+    it: { kicker: "Parti dalla tua routine", title: "Com'è la tua giornata abituale?", intro: "Scegli uno dei 20 schemi giornalieri precaricati. Crea un'ecologia iniziale modellata, non il risultato di un test fecale.", step1: "1 · Punto di partenza", chooseDay: "Scegli la tua giornata abituale", baselineNote: "Modellata da 10 ripetizioni di questa giornata", step2: "2 · Prova un'esposizione", foods: "5 alimenti e bevande", meals: "5 pasti", step3: "3 · Osserva la spinta", once: "Dopo una", ten: "Dopo 10×", start: "Inizio", compare: "Principali variazioni modellate", fullLab: "Apri nel laboratorio completo", source: "Nota sulle evidenze", disclaimer: "Solo scenario direzionale. Un pasto può cambiare i substrati prima dell'abbondanza fecale; 10× è un esperimento mentale su esposizioni ripetute." }
+  };
+
   const SOURCES = {
     personalized: "https://pubmed.ncbi.nlm.nih.gov/31194939/",
     rapidDiet: "https://pubmed.ncbi.nlm.nih.gov/24336217/",
@@ -49,6 +100,8 @@
     gaba: "https://www.nature.com/articles/s41564-018-0307-3",
     faecalibacterium: "https://pmc.ncbi.nlm.nih.gov/articles/PMC7567499/",
     fermented: "https://doi.org/10.1016/j.cell.2021.06.019",
+    kombucha: "https://pubmed.ncbi.nlm.nih.gov/39738315/",
+    alcohol: "https://pubmed.ncbi.nlm.nih.gov/33096423/",
     bifidoMood: "https://doi.org/10.1053/j.gastro.2017.05.003"
   };
 
@@ -125,8 +178,8 @@
   };
 
   const FOOD_IT = {
-    oats: "Avena", lentils: "Lenticchie", chickpeas: "Ceci", beans: "Fagioli", "cooled-potato": "Patate raffreddate", "green-banana": "Banana verde", apple: "Mela", berries: "Frutti di bosco", "onion-garlic": "Cipolla e aglio", artichoke: "Carciofo", broccoli: "Broccoli", wholegrain: "Pane integrale", almonds: "Mandorle", cocoa: "Cacao fondente", coffee: "Caffè", "olive-oil": "Olio extravergine", kefir: "Kefir", yogurt: "Yogurt vivo", kimchi: "Kimchi / crauti", "red-meat": "Carne rossa", "processed-meat": "Carne lavorata", cheese: "Formaggio stagionato", "upf-snack": "Snack ultra-processato", eggs: "Uova", chicken: "Pollo", salmon: "Salmone", "white-bread": "Pane bianco", pasta: "Pasta", "brown-rice": "Riso integrale", "white-rice": "Riso bianco", "leafy-greens": "Verdure a foglia", tomato: "Pomodoro", avocado: "Avocado", carrots: "Carote", peas: "Piselli", pear: "Pera", "ripe-banana": "Banana matura", walnuts: "Noci", milk: "Latte", butter: "Burro", "sugary-drink": "Bibita zuccherata", fries: "Patatine fritte", pizza: "Pizza", burger: "Burger", "sweet-cereal": "Cereali dolci", pancakes: "Pancake"
+    oats: "Avena", lentils: "Lenticchie", chickpeas: "Ceci", beans: "Fagioli", "cooled-potato": "Patate raffreddate", "green-banana": "Banana verde", apple: "Mela", berries: "Frutti di bosco", "onion-garlic": "Cipolla e aglio", artichoke: "Carciofo", broccoli: "Broccoli", wholegrain: "Pane integrale", almonds: "Mandorle", cocoa: "Cacao fondente", coffee: "Caffè", kombucha: "Kombucha", alcohol: "Bevanda alcolica", "olive-oil": "Olio extravergine", kefir: "Kefir", yogurt: "Yogurt vivo", kimchi: "Kimchi / crauti", "red-meat": "Carne rossa", "processed-meat": "Carne lavorata", cheese: "Formaggio stagionato", "upf-snack": "Snack ultra-processato", eggs: "Uova", chicken: "Pollo", salmon: "Salmone", "white-bread": "Pane bianco", pasta: "Pasta", "brown-rice": "Riso integrale", "white-rice": "Riso bianco", "leafy-greens": "Verdure a foglia", tomato: "Pomodoro", avocado: "Avocado", carrots: "Carote", peas: "Piselli", pear: "Pera", "ripe-banana": "Banana matura", walnuts: "Noci", milk: "Latte", butter: "Burro", "sugary-drink": "Bibita zuccherata", fries: "Patatine fritte", pizza: "Pizza", burger: "Burger", "sweet-cereal": "Cereali dolci", pancakes: "Pancake"
   };
 
-  return { MEALS, SOURCES, SPECIES_INFO, SPECIES_BASES: common, UI, FOOD_IT };
+  return { MEALS, DAY_PATTERNS, QUICK_STORIES, STORY_UI, SOURCES, SPECIES_INFO, SPECIES_BASES: common, UI, FOOD_IT };
 });

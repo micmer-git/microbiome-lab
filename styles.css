@@ -275,6 +275,33 @@ dialog::backdrop { background: rgba(16,43,37,.55); backdrop-filter: blur(5px); }
 .neuro-caution { margin-top: 18px; padding: 15px; border: 1px solid rgba(157,147,232,.35); background: rgba(157,147,232,.07); }.neuro-caution strong { font: 9px "DM Mono"; text-transform: uppercase; }.neuro-caution p { margin: 6px 0 0; font-size: 9px !important; }
 .species-dialog-content > a, #species-dialog-content > a { display: inline-block; margin-top: 18px; color: var(--acid); font: 9px "DM Mono"; text-transform: uppercase; }
 
+.story-section { padding: 105px 0 120px; background: var(--paper); }
+.story-heading { max-width: 920px; margin-bottom: 44px; }
+.story-heading h2 { margin: 0; max-width: 850px; font-size: clamp(52px, 6vw, 84px); line-height: .94; letter-spacing: -.055em; font-weight: 500; }
+.story-heading > p:last-child { max-width: 670px; margin: 25px 0 0; color: var(--muted); font-size: 16px; line-height: 1.65; }
+.story-flow { display: grid; grid-template-columns: minmax(270px, .78fr) minmax(300px, .92fr) minmax(440px, 1.5fr); border: 1px solid var(--line); background: rgba(255,255,255,.18); }
+.story-step { min-width: 0; padding: 25px; border-right: 1px solid var(--line); }
+.story-step:last-child { border-right: 0; }
+.story-step-label { margin: 0 0 19px; color: var(--muted); font: 500 10px "DM Mono"; text-transform: uppercase; letter-spacing: .08em; }
+.story-baseline-step > label { display: block; margin-bottom: 8px; font-size: 14px; font-weight: 600; }
+#day-pattern-select { width: 100%; min-height: 50px; padding: 0 38px 0 13px; border: 1px solid var(--line); border-radius: 0; background: var(--paper); color: var(--ink); font-size: 14px; }
+.usual-day-card { min-height: 210px; margin-top: 12px; padding: 22px; background: var(--deep); color: var(--paper); display: flex; flex-direction: column; }
+.usual-day-card > small { color: var(--acid); font: 10px "DM Mono"; }.usual-day-card h3 { margin: 24px 0 9px; font-size: 25px; line-height: 1.05; font-weight: 500; }.usual-day-card p { margin: 0; color: rgba(244,239,229,.65); font-size: 12px; line-height: 1.55; }
+.usual-day-card > div { display: flex; gap: 15px; margin-top: auto; padding-top: 20px; }.usual-day-card > div span { font: 9px "DM Mono"; color: rgba(244,239,229,.55); }.usual-day-card > div b { color: var(--acid); font-size: 14px; }
+.story-baseline-note { margin: 10px 0 0; color: var(--muted); font: 9px/1.45 "DM Mono"; }
+.story-kind-tabs { display: grid; grid-template-columns: 1fr 1fr; margin-bottom: 9px; }
+.story-kind-tabs button { min-height: 45px; border: 1px solid var(--line); background: transparent; font-size: 11px; cursor: pointer; }.story-kind-tabs button + button { border-left: 0; }.story-kind-tabs button.active { background: var(--ink); color: var(--paper); }
+.story-options { display: grid; gap: 6px; }
+.story-option { min-height: 70px; display: grid; grid-template-columns: 31px 1fr; grid-template-rows: auto auto; column-gap: 10px; align-items: center; border: 1px solid var(--line); background: transparent; padding: 10px; text-align: left; cursor: pointer; }
+.story-option > span { grid-row: 1 / 3; width: 31px; height: 31px; display: grid; place-items: center; border: 1px solid var(--line); border-radius: 50%; font-size: 14px; }.story-option strong { align-self: end; font-size: 12px; }.story-option small { align-self: start; color: var(--muted); font-size: 9px; line-height: 1.35; }.story-option.selected { background: var(--acid); border-color: var(--ink); }.story-option.selected small { color: rgba(23,49,43,.7); }
+.story-evidence { margin-top: 12px; color: var(--muted); font-size: 10px; line-height: 1.5; }.story-evidence a { color: var(--ink); font-family: "DM Mono"; }
+.story-result-step { background: var(--deep); color: var(--paper); overflow: hidden; }
+.story-result-step .story-step-label { color: rgba(244,239,229,.5); margin-bottom: 5px; }.story-result-heading { display: flex; justify-content: space-between; gap: 20px; align-items: flex-start; }.story-result-heading h3 { margin: 0; font-size: 22px; font-weight: 500; }
+.story-legend { display: flex; gap: 10px; flex-wrap: wrap; justify-content: flex-end; }.story-legend span { display: flex; align-items: center; gap: 4px; }.story-legend i { width: 8px; height: 8px; border-radius: 50%; }.story-legend i.start { border: 1px solid var(--paper); }.story-legend i.once { background: var(--aqua); }.story-legend i.ten { background: var(--acid); }.story-legend b { color: rgba(244,239,229,.55); font: 8px "DM Mono"; }
+#story-chart { width: 100%; height: auto; margin-top: 18px; overflow: visible; }#story-chart line { stroke: rgba(244,239,229,.12); }#story-chart .change-line { stroke: rgba(244,239,229,.38); stroke-width: 1.5; }#story-chart text { fill: rgba(244,239,229,.5); font: 10px "DM Mono"; }#story-chart .species-name { fill: rgba(244,239,229,.82); font-style: italic; }#story-chart .start-dot { fill: var(--deep); stroke: var(--paper); stroke-width: 1.5; }#story-chart .once-dot { fill: var(--aqua); }#story-chart .ten-dot { fill: var(--acid); }#story-chart .delta-label.up { fill: var(--acid); }#story-chart .delta-label.down { fill: var(--coral); }
+.story-disclaimer { color: rgba(244,239,229,.5); font-size: 11px; line-height: 1.55; margin: 12px 0 18px; }
+.story-full-button { width: 100%; min-height: 48px; padding: 11px 15px; border: 1px solid var(--acid); background: var(--acid); color: var(--ink); font-weight: 600; cursor: pointer; }
+
 @media (max-width: 1050px) {
   .hero { grid-template-columns: 1fr 1fr; min-height: 670px; }
   .model-grid { grid-template-columns: 350px 1fr; }
@@ -284,23 +311,27 @@ dialog::backdrop { background: rgba(16,43,37,.55); backdrop-filter: blur(5px); }
   .pathway { min-height: 260px; }
   .species-insights { grid-template-columns: 1fr; }
   .meal-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .story-flow { grid-template-columns: 1fr 1fr; }.story-result-step { grid-column: 1 / -1; }.story-choice-step { border-right: 0; }
 }
 
 @media (max-width: 760px) {
   .section-shell, .site-header { width: min(100% - 30px, 1440px); }
   .site-header { height: 70px; }.site-header nav { display: none; }.ghost-button { padding: 8px 12px; }.language-button { padding: 8px 5px; }
-  .hero { grid-template-columns: 1fr; padding-top: 70px; overflow: hidden; }
-  .hero-copy { z-index: 2; }.hero h1 { font-size: 57px; }.hero-lede { font-size: 15px; }.hero-actions { align-items: flex-start; flex-direction: column; }.trust-line { margin-top: 38px; gap: 8px; }
-  .hero-vessel { width: 115%; justify-self: center; margin: -40px -7.5% -10px; }
+  body { font-size: 16px; }
+  .hero { grid-template-columns: 1fr; min-height: auto; padding: 48px 0 56px; overflow: hidden; }
+  .hero-copy { z-index: 2; }.hero h1 { font-size: clamp(48px, 15vw, 62px); }.hero-lede { font-size: 18px; line-height: 1.6; }.hero-actions { align-items: stretch; flex-direction: column; gap: 16px; }.hero-actions .primary-button { width: 100%; min-width: 0; font-size: 15px; }.hero-actions .text-button { align-self: flex-start; font-size: 14px; }.trust-line { margin-top: 34px; gap: 8px; font-size: 10px; flex-wrap: wrap; }
+  .hero-vessel { width: 100%; max-width: 350px; justify-self: center; margin: -5px auto -25px; }
+  .eyebrow { font-size: 11px; }
+  .story-section { padding: 68px 0 78px; }.story-heading { margin-bottom: 30px; }.story-heading h2 { font-size: 48px; }.story-heading > p:last-child { font-size: 17px; line-height: 1.6; }.story-flow { display: block; border: 0; }.story-step { border: 1px solid var(--line); border-bottom: 0; padding: 20px 16px; }.story-step:last-child { border-bottom: 1px solid var(--line); }.story-step-label { font-size: 11px; }.story-baseline-step > label { font-size: 16px; }#day-pattern-select { min-height: 56px; font-size: 16px; }.usual-day-card { min-height: 230px; padding: 22px 18px; }.usual-day-card h3 { font-size: 29px; }.usual-day-card p { font-size: 14px; }.story-baseline-note { font-size: 11px; }.story-kind-tabs button { min-height: 50px; font-size: 13px; }.story-options { display: flex; overflow-x: auto; scroll-snap-type: x mandatory; padding-bottom: 6px; }.story-option { flex: 0 0 84%; min-height: 116px; scroll-snap-align: start; padding: 15px; grid-template-columns: 42px 1fr; }.story-option > span { width: 42px; height: 42px; }.story-option strong { font-size: 16px; }.story-option small { font-size: 12px; }.story-evidence { font-size: 12px; }.story-result-heading { display: block; }.story-result-heading h3 { font-size: 24px; }.story-legend { justify-content: flex-start; margin-top: 14px; }.story-legend b { font-size: 10px; }#story-chart text { font-size: 12px; }.story-disclaimer { font-size: 13px; }.story-full-button { min-height: 55px; font-size: 15px; }
   .section-heading { grid-template-columns: 1fr; gap: 25px; margin-bottom: 40px; }.section-heading h2 { font-size: 49px; }
-  .model-section { padding: 80px 0; border-radius: 26px 26px 0 0; }.model-grid { grid-template-columns: 1fr; }.control-panel { border-right: 0; border-bottom: 1px solid rgba(244,239,229,.15); padding: 22px 16px; }.simulation-panel { padding: 22px 14px; }.food-library { max-height: 320px; }.simulation-toolbar { grid-template-columns: auto 1fr auto; }.score-block > div:last-child { display: none; }.chart-wrap { padding: 12px 7px; }.legend { display: none; }#trajectory-chart { height: 210px; }.guild-card { min-height: 100px; }.selected-diet { padding: 18px 14px; }
+  .model-section { padding: 80px 0; border-radius: 26px 26px 0 0; }.model-grid { grid-template-columns: 1fr; }.control-panel { border-right: 0; border-bottom: 1px solid rgba(244,239,229,.15); padding: 22px 16px; }.simulation-panel { padding: 22px 14px; }.food-library { max-height: 380px; }.simulation-toolbar { grid-template-columns: auto 1fr auto; }.score-block > div:last-child { display: block; }.score-block small, .panel-heading small { font-size: 11px; }.score-block p { font-size: 13px; }.chart-wrap { padding: 14px 9px; }.chart-header strong { font-size: 15px; }.chart-header small { font-size: 10px; }.legend { display: none; }#trajectory-chart { height: 210px; }.guild-card { min-height: 100px; }.selected-diet { padding: 18px 14px; }.panel-heading h3, .simulation-toolbar h3 { font-size: 22px; }.baseline-card { min-height: 98px; padding: 16px; }.baseline-card span { font-size: 16px; }.baseline-card small { font-size: 12px; }.mode-button { min-height: 82px; padding: 14px; }.mode-button strong { font-size: 15px; }.mode-button small { font-size: 12px; }.food-card { min-height: 112px; }.food-card strong { font-size: 14px; }.food-card small { font-size: 11px; }.filter-button { font-size: 10px; padding: 8px 12px; }.search-box input { height: 54px; font-size: 15px; }.repeat-control { font-size: 12px; }.meal-library-button { min-height: 50px; font-size: 13px; }
   #distribution-editor { grid-template-columns: 1fr; }.species-input:nth-child(odd) { border-right: 0; }
   .baseline-options { grid-template-columns: 1fr; }
   #species-chart { min-height: 460px; }.species-chart-wrap { overflow-x: auto; }.species-chart-wrap #species-chart { min-width: 650px; }
   .species-insights { grid-template-columns: 1fr; }.species-insights article { min-height: 115px; }
   .meal-score-strip { grid-template-columns: 1fr 1fr; }.meal-score-strip p { grid-column: 1 / -1; max-width: none; }
-  .community-wrap { padding: 12px 5px; }.community-wrap .chart-header { display: block; padding: 0 7px; }.community-wrap .chart-header p { margin-top: 7px; }.community-node text { display: none; }#community-chart { min-height: 300px; }
-  .meal-dialog, .species-dialog { padding: 38px 18px 22px; }.meal-grid { grid-template-columns: 1fr; }.meal-card { min-height: 220px; }.species-facts { grid-template-columns: 1fr; gap: 12px; }
+  .community-wrap { padding: 14px 7px; }.community-wrap .chart-header { display: block; padding: 0 7px; }.community-wrap .chart-header p { margin-top: 7px; font-size: 12px; }.community-node text { display: none; }#community-chart { min-height: 300px; }
+  .meal-dialog, .species-dialog { padding: 38px 18px 22px; }.meal-grid { grid-template-columns: 1fr; }.meal-card { min-height: 250px; }.meal-card header strong { font-size: 18px; }.meal-card > p { font-size: 12px !important; }.meal-card-scores span, .meal-loves > small { font-size: 10px; }.meal-loves span { font-size: 11px; }.meal-card button { min-height: 45px; font-size: 11px; }.species-facts { grid-template-columns: 1fr; gap: 12px; }.effect-list p, .neuro-caution p { font-size: 12px !important; }.effect-list header span { font-size: 11px; }
   .biology-section, .evidence-section { padding: 80px 0; }.metabolite-grid { grid-template-columns: 1fr; }.metabolite-card { min-height: 245px; }.pathway { grid-template-columns: repeat(2, 1fr); gap: 25px; }.path-node:not(:last-child)::after { display: none; }
   .paper-row { grid-template-columns: 50px 1fr 24px; gap: 10px; }.paper-finding, .paper-kind { display: none; }
   .boundary-card { padding: 36px 24px; }.boundary-grid { grid-template-columns: 1fr; gap: 10px; margin-top: 45px; }.site-footer { flex-direction: column; align-items: flex-start; justify-content: center; gap: 17px; padding: 35px 0; }

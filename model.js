@@ -105,6 +105,8 @@
     { id: "almonds", name: "Almonds", icon: "◇", group: "nuts", plant: true, tags: "cell walls · polyphenols", features: { fiber: .6, polyphenol: .5, plant: .8, unsatFat: .5 } },
     { id: "cocoa", name: "Dark cocoa", icon: "◆", group: "polyphenols", plant: true, tags: "flavanols · fibre", features: { fiber: .45, polyphenol: 1, plant: .6 } },
     { id: "coffee", name: "Coffee", icon: "∿", group: "polyphenols", plant: true, tags: "chlorogenic acids", features: { polyphenol: .85, coffee: 1, plant: .35 } },
+    { id: "kombucha", name: "Kombucha", icon: "◌", group: "fermented", plant: true, tags: "fermented tea · product-variable", features: { fermented: .72, polyphenol: .32, refined: .16, plant: .18 } },
+    { id: "alcohol", name: "Alcoholic drink", icon: "▽", group: "other", plant: false, tags: "ethanol · beverage varies", features: { alcohol: 1, refined: .16 } },
     { id: "olive-oil", name: "Extra virgin olive oil", icon: "◐", group: "fats", plant: true, tags: "phenolics · unsaturated fat", features: { polyphenol: .35, unsatFat: 1, plant: .25 } },
     { id: "kefir", name: "Kefir", icon: "◍", group: "fermented", plant: false, tags: "live cultures · fermentation", features: { fermented: 1, dairy: .55 } },
     { id: "yogurt", name: "Live yogurt", icon: "◓", group: "fermented", plant: false, tags: "live cultures", features: { fermented: .78, dairy: .65 } },
@@ -149,6 +151,7 @@
     arabinoxylan:{ butyrate: .18, bifido: .06, saccharolytic: .14 },
     polyphenol:  { mucin: .13, butyrate: .07, saccharolytic: .03, proteolytic: -.05 },
     coffee:      { generalists: .07, mucin: .04 },
+    alcohol:     { butyrate: -.06, bifido: -.035, proteolytic: .045, bile: .035, generalists: .025 },
     fermented:   { lactate: .30, bifido: .05, generalists: .06 },
     plant:       { butyrate: .035, saccharolytic: .04, generalists: .03, proteolytic: -.025 },
     unsatFat:    { mucin: .035, bile: -.025 },
@@ -237,7 +240,7 @@
     const substrateTypes = substrateKeys.filter(key => (f[key] || 0) >= .08).length;
     const variety = round(clamp(5 + diet.plantCount * 10 + substrateTypes * 4 + Math.min(diet.foods.length, 8) * 2, 0, 100), 0);
     const positive = 13 * Math.tanh((f.fiber || 0) / 1.5) + 8 * Math.tanh(((f.rs || 0) + (f.inulin || 0) + (f.gos || 0)) / 1.2) + 6 * Math.tanh((f.polyphenol || 0) / 1.1) + 5 * Math.tanh((f.fermented || 0) / .8) + 3 * Math.tanh((f.unsatFat || 0) / .9) + diet.plantCount * 2.2;
-    const negative = 10 * Math.tanh((f.processed || 0) / 1.2) + 8 * Math.tanh((f.refined || 0) / 1.4) + 8 * Math.tanh((f.satFat || 0) / 1.2);
+    const negative = 10 * Math.tanh((f.processed || 0) / 1.2) + 8 * Math.tanh((f.refined || 0) / 1.4) + 8 * Math.tanh((f.satFat || 0) / 1.2) + 7 * Math.tanh((f.alcohol || 0) / 1.1);
     const support = round(clamp(45 + positive - negative, 5, 95), 0);
     return { variety, support, substrateTypes, plantCount: diet.plantCount };
   }
@@ -378,6 +381,7 @@
       { key: "prebiotic", score: (f.inulin || 0) + (f.gos || 0), title: "Prebiotic bifidogenic route", copy: "Inulin-type fructans and GOS selectively favour some primary fermenters. Acetate and lactate can then feed secondary butyrate producers.", confidence: 4, nodes: [["Inulin / GOS", "substrate"], ["Bifidobacteria", "primary use"], ["Cross-feeders", "secondary use"], ["Acetate + butyrate", "metabolites"]] },
       { key: "polyphenol", score: (f.polyphenol || 0) + .5 * (f.coffee || 0), title: "Polyphenol biotransformation", copy: "Most polyphenols are transformed extensively before or within the colon. Microbes and metabolites respond, but causality is compound- and person-specific.", confidence: 2, nodes: [["Polyphenols", "food matrix"], ["Biotransformers", "conversion"], ["Phenolic acids", "metabolites"], ["Community shift", "association"]] },
       { key: "fermented", score: (f.fermented || 0) * 1.1, title: "Fermented-food exposure", copy: "Food-associated microbes and fermentation products enter repeatedly. Persistence is usually limited, yet community diversity and immune markers may change.", confidence: 3, nodes: [["Fermented food", "exposure"], ["Transient microbes", "passage"], ["Resident network", "interaction"], ["Immune context", "host readout"]] },
+      { key: "alcohol", score: (f.alcohol || 0) * 1.2, title: "Ethanol perturbation pressure", copy: "The generic alcohol scenario applies a small ecological perturbation. Beverage type, dose and drinking pattern matter; this model does not define a safe intake or a health benefit.", confidence: 1, nodes: [["Alcoholic drink", "exposure"], ["Ethanol", "perturbation"], ["Resident network", "selection"], ["Community shift", "scenario"]] },
       { key: "protein", score: (f.animalProtein || 0) + .7 * (f.satFat || 0), title: "Protein and bile-acid pressure", copy: "Protein reaching the colon supports amino-acid fermentation, while higher saturated-fat exposure can alter bile flow and favour bile-tolerant organisms.", confidence: 2, nodes: [["Protein + fat", "diet"], ["Bile / peptides", "substrates"], ["Tolerant guilds", "selection"], ["N/S products", "metabolites"]] }
     ];
     const best = candidates.sort((a, b) => b.score - a.score)[0];

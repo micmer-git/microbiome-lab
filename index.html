@@ -17,6 +17,7 @@
         <span>MICROBIOME<sup>lab</sup></span>
       </a>
       <nav aria-label="Primary navigation">
+        <a href="#story">Start</a>
         <a href="#model">Model</a>
         <a href="#biology">Biology</a>
         <a href="#evidence">Evidence</a>
@@ -30,14 +31,14 @@
     <main id="top">
       <section class="hero section-shell">
         <div class="hero-copy">
-          <p class="eyebrow">A living systems experiment · v0.3</p>
+          <p class="eyebrow">A living systems experiment · v0.4</p>
           <h1>Your gut is an <em>ecosystem</em>, not a score.</h1>
           <p class="hero-lede">
             Build one meal or one day. See the directional nudge across 20 gut species, then repeat
             the same exposure to explore how baseline-dependent ecological pressure may accumulate.
           </p>
           <div class="hero-actions">
-            <a class="primary-button" href="#model">Build an exposure <span>↓</span></a>
+            <a class="primary-button" href="#story">Start with your usual day <span>↓</span></a>
             <button class="text-button" id="load-demo" type="button">Load the fibre-rich meal</button>
           </div>
           <div class="trust-line">
@@ -54,6 +55,46 @@
           <div class="orbit-note orbit-note-a">cross-feeding</div>
           <div class="orbit-note orbit-note-b">substrates</div>
           <div class="orbit-note orbit-note-c">metabolites</div>
+        </div>
+      </section>
+
+      <section class="story-section" id="story">
+        <div class="story-shell section-shell">
+          <header class="story-heading">
+            <p class="eyebrow" id="story-kicker">Start with your real routine</p>
+            <h2 id="story-title">What does your usual day look like?</h2>
+            <p id="story-intro">Choose one of 20 preloaded day patterns. It creates a modelled starting ecology—not a stool-test result.</p>
+          </header>
+
+          <div class="story-flow">
+            <section class="story-step story-baseline-step">
+              <p class="story-step-label" id="story-step-1">1 · Starting point</p>
+              <label for="day-pattern-select" id="day-pattern-label">Choose your usual day</label>
+              <select id="day-pattern-select"></select>
+              <article class="usual-day-card" id="usual-day-card"></article>
+              <p class="story-baseline-note" id="story-baseline-note">Modelled from 10 repeats of this day</p>
+            </section>
+
+            <section class="story-step story-choice-step">
+              <p class="story-step-label" id="story-step-2">2 · Try one exposure</p>
+              <div class="story-kind-tabs" role="group" aria-label="Exposure examples">
+                <button class="active" type="button" data-story-kind="food" id="story-foods-tab">5 foods &amp; drinks</button>
+                <button type="button" data-story-kind="meal" id="story-meals-tab">5 meals</button>
+              </div>
+              <div class="story-options" id="story-options"></div>
+              <div class="story-evidence" id="story-evidence"></div>
+            </section>
+
+            <section class="story-step story-result-step">
+              <div class="story-result-heading">
+                <div><p class="story-step-label" id="story-step-3">3 · See the nudge</p><h3 id="story-result-title">Largest modelled species changes</h3></div>
+                <div class="story-legend"><span><i class="start"></i><b id="story-start-label">Start</b></span><span><i class="once"></i><b id="story-once-label">After one</b></span><span><i class="ten"></i><b id="story-ten-label">After 10×</b></span></div>
+              </div>
+              <svg id="story-chart" viewBox="0 0 680 310" role="img" aria-label="Starting microbiome compared with one and ten repeated exposures"></svg>
+              <p class="story-disclaimer" id="story-disclaimer"></p>
+              <button class="story-full-button" id="story-full-button" type="button">Open this in the full lab</button>
+            </section>
+          </div>
         </div>
       </section>
 

@@ -1,6 +1,6 @@
 # Model specification
 
-Version 0.3 · August 2026
+Version 0.4 · August 2026
 
 ## Purpose
 
@@ -69,6 +69,12 @@ Two 0–100 heuristics summarize only the modeled food-feature mix:
 - **microbiome support** combines positive carbohydrate, polyphenol and fermented-food pressures and subtracts modeled low-fibre, saturated-fat and processing pressure.
 
 Both scores are bounded display indices. They are not validated clinical endpoints, diet-quality scores or estimates of alpha diversity. The “top responders” shown on a meal card are the two species receiving the largest positive model coefficient under a mixed starting ecology; they are not organisms proven to increase in every person.
+
+## Guided usual-day baseline
+
+The mobile-first onboarding offers 20 preloaded usual-day patterns. Selecting one runs that day pattern for 10 modeled day exposures from the generic mixed preset; the resulting normalized species state becomes the starting ecology for the chosen food, drink or meal story. This is a transparent scenario construction, not an inference of the visitor's real microbiome from a food questionnaire.
+
+The story view then compares the modeled start, one meal-sized exposure and 10 repeated meal-sized exposures. The coffee scenario encodes the replicated *Lawsonibacter* association already described in the species layer. Kombucha uses a mild fermented-food and tea-polyphenol feature mix because small human trials report modest and product-variable effects. The generic alcoholic-drink scenario encodes a small ethanol pressure; it does not model beverage-specific polyphenols, establish a safe dose or outweigh the health risks of alcohol.
 
 ## Ecological update
 

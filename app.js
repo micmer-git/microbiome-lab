@@ -2,7 +2,7 @@
   "use strict";
 
   const { FOODS, GUILDS, SPECIES, simulateExposure, speciesBaseline, dominantPathway, calculateMealScores } = window.MicrobiomeModel;
-  const { MEALS, SPECIES_INFO, SPECIES_BASES, UI, FOOD_IT } = window.MicrobiomeContent;
+  const { MEALS, DAY_PATTERNS, QUICK_STORIES, STORY_UI, SPECIES_INFO, SPECIES_BASES, UI, FOOD_IT } = window.MicrobiomeContent;
   const $ = selector => document.querySelector(selector);
   const $$ = selector => [...document.querySelectorAll(selector)];
 
@@ -18,7 +18,8 @@
   ];
 
   const CATEGORY_LABELS = { all: "All", grains: "Grains", legumes: "Legumes", fruit: "Fruit", plants: "Plants", fermented: "Fermented", polyphenols: "Polyphenols", animal: "Animal", other: "Other" };
-  const state = { selection: {}, baseline: "typical", mode: "meal", repeats: 5, exposure: 5, customDistribution: null, foodFilter: "all", evidenceFilter: "all", mealFilter: "all", language: "en", query: "", result: null, selectedSpecies: null };
+  const preferredLanguage = navigator.language && navigator.language.toLowerCase().startsWith("it") ? "it" : "en";
+  const state = { selection: {}, baseline: "typical", mode: "meal", repeats: 5, exposure: 5, customDistribution: null, foodFilter: "all", evidenceFilter: "all", mealFilter: "all", language: preferredLanguage, query: "", result: null, selectedSpecies: null, storyDay: "mixed", storyKind: "food", storyExposure: "coffee" };
   const t = key => UI[state.language][key] || UI.en[key] || key;
   const foodName = food => state.language === "it" ? (FOOD_IT[food.id] || food.name) : food.name;
 
@@ -30,6 +31,9 @@
       if (["typical", "plant", "lowFiber"].includes(saved.baseline)) state.baseline = saved.baseline;
       if (["meal", "day"].includes(saved.mode)) state.mode = saved.mode;
       if (["en", "it"].includes(saved.language)) state.language = saved.language;
+      if (DAY_PATTERNS.some(day => day.id === saved.storyDay)) state.storyDay = saved.storyDay;
+      if (["food", "meal"].includes(saved.storyKind)) state.storyKind = saved.storyKind;
+      if (QUICK_STORIES.some(story => story.id === saved.storyExposure)) state.storyExposure = saved.storyExposure;
       state.repeats = Math.max(1, Math.min(10, Number(saved.repeats) || 5));
       state.exposure = state.repeats;
       if (saved.customDistribution) state.customDistribution = saved.customDistribution;
@@ -38,19 +42,20 @@
 
   function saveState() {
     try {
-      localStorage.setItem("microbiome-exposure-v2", JSON.stringify({ selection: state.selection, baseline: state.baseline, mode: state.mode, repeats: state.repeats, customDistribution: state.customDistribution, language: state.language }));
+      localStorage.setItem("microbiome-exposure-v2", JSON.stringify({ selection: state.selection, baseline: state.baseline, mode: state.mode, repeats: state.repeats, customDistribution: state.customDistribution, language: state.language, storyDay: state.storyDay, storyKind: state.storyKind, storyExposure: state.storyExposure }));
     } catch (_) { /* The model still works without browser storage. */ }
   }
 
   const STATIC_COPY = [
     ["#about-button", "What this is", "Cos'è"],
-    [".site-header nav a:nth-child(1)", "Model", "Modello"],
-    [".site-header nav a:nth-child(2)", "Biology", "Biologia"],
-    [".site-header nav a:nth-child(3)", "Evidence", "Evidenze"],
-    [".hero-copy .eyebrow", "A living systems experiment · v0.3", "Un esperimento sui sistemi viventi · v0.3"],
+    [".site-header nav a:nth-child(1)", "Start", "Inizia"],
+    [".site-header nav a:nth-child(2)", "Model", "Modello"],
+    [".site-header nav a:nth-child(3)", "Biology", "Biologia"],
+    [".site-header nav a:nth-child(4)", "Evidence", "Evidenze"],
+    [".hero-copy .eyebrow", "A living systems experiment · v0.4", "Un esperimento sui sistemi viventi · v0.4"],
     [".hero-copy h1", "Your gut is an <em>ecosystem</em>, not a score.", "Il tuo intestino è un <em>ecosistema</em>, non un voto.", true],
     [".hero-lede", "Build one meal or one day. See the directional nudge across 20 gut species, then repeat the same exposure to explore how baseline-dependent ecological pressure may accumulate.", "Costruisci un pasto o una giornata. Osserva la spinta direzionale su 20 specie intestinali e ripeti l'esposizione per esplorare come la pressione ecologica dipenda dal punto di partenza."],
-    [".hero-actions .primary-button", "Build an exposure <span>↓</span>", "Costruisci un'esposizione <span>↓</span>", true],
+    [".hero-actions .primary-button", "Start with your usual day <span>↓</span>", "Parti dalla tua giornata abituale <span>↓</span>", true],
     ["#load-demo", "Load the fibre-rich meal", "Carica il pasto ricco di fibre"],
     [".trust-line span:nth-of-type(1)", "Human studies", "Studi sull'uomo"],
     [".trust-line span:nth-of-type(2)", "Mechanism-aware", "Attento ai meccanismi"],
@@ -169,6 +174,58 @@
     const plantCount = $("#plant-count").textContent;
     $(".plant-counter").innerHTML = `<strong id="plant-count">${plantCount}</strong> ${t("plantSources")}`;
     $$(".dialog-close").forEach(button => button.setAttribute("aria-label", t("close")));
+  }
+
+  function storyScenario() {
+    const day = DAY_PATTERNS.find(item => item.id === state.storyDay) || DAY_PATTERNS[0];
+    const story = QUICK_STORIES.find(item => item.id === state.storyExposure) || QUICK_STORIES[0];
+    const baselineRun = simulateExposure(day.selection, "typical", "day", 10);
+    const customDistribution = baselineRun.trajectory[10].species;
+    const exposureRun = simulateExposure(story.selection, "typical", "meal", 10, customDistribution);
+    return { day, story, customDistribution, exposureRun };
+  }
+
+  function renderStoryChart(exposureRun) {
+    const start = exposureRun.trajectory[0].species;
+    const once = exposureRun.trajectory[1].species;
+    const ten = exposureRun.trajectory[10].species;
+    const keys = Object.keys(SPECIES).sort((a, b) => Math.abs(ten[b] - start[b]) - Math.abs(ten[a] - start[a])).slice(0, 6);
+    const mobile = window.innerWidth <= 760;
+    const width = mobile ? 420 : 680, height = 310, pad = { l: mobile ? 116 : 166, r: mobile ? 46 : 48, t: 24, b: 28 };
+    const maxValue = Math.max(.04, Math.ceil(Math.max(...keys.flatMap(key => [start[key], once[key], ten[key]])) * 20) / 20);
+    const x = value => pad.l + value / maxValue * (width - pad.l - pad.r);
+    const ticks = [0, maxValue / 2, maxValue];
+    const grid = ticks.map(value => `<line x1="${x(value)}" y1="${pad.t - 8}" x2="${x(value)}" y2="${height - pad.b}"/><text class="axis-label" x="${x(value)}" y="${height - 6}" text-anchor="middle">${(100 * value).toFixed(value ? 1 : 0)}%</text>`).join("");
+    const rows = keys.map((key, index) => {
+      const y = pad.t + 20 + index * 40;
+      const delta = 100 * (ten[key] - start[key]);
+      return `<g class="story-chart-row">
+        <text class="species-name" x="${pad.l - 12}" y="${y + 4}" text-anchor="end">${SPECIES[key].short}</text>
+        <line class="change-line" x1="${x(start[key])}" y1="${y}" x2="${x(ten[key])}" y2="${y}"/>
+        <circle class="start-dot" cx="${x(start[key])}" cy="${y}" r="5"/>
+        <circle class="once-dot" cx="${x(once[key])}" cy="${y}" r="5"/>
+        <circle class="ten-dot" cx="${x(ten[key])}" cy="${y}" r="6"/>
+        <text class="delta-label ${delta >= 0 ? "up" : "down"}" x="${width - 4}" y="${y + 4}" text-anchor="end">${delta >= 0 ? "+" : ""}${delta.toFixed(2)} pp</text>
+      </g>`;
+    }).join("");
+    $("#story-chart").setAttribute("viewBox", `0 0 ${width} ${height}`);
+    $("#story-chart").innerHTML = `<title>${STORY_UI[state.language].compare}</title><desc>${STORY_UI[state.language].disclaimer}</desc>${grid}${rows}`;
+  }
+
+  function renderStory() {
+    const copy = STORY_UI[state.language];
+    const { day, story, exposureRun } = storyScenario();
+    const copyMap = { "story-kicker": copy.kicker, "story-title": copy.title, "story-intro": copy.intro, "story-step-1": copy.step1, "day-pattern-label": copy.chooseDay, "story-baseline-note": copy.baselineNote, "story-step-2": copy.step2, "story-foods-tab": copy.foods, "story-meals-tab": copy.meals, "story-step-3": copy.step3, "story-result-title": copy.compare, "story-start-label": copy.start, "story-once-label": copy.once, "story-ten-label": copy.ten, "story-disclaimer": copy.disclaimer, "story-full-button": copy.fullLab };
+    Object.entries(copyMap).forEach(([id, value]) => { $("#" + id).textContent = value; });
+    $("#day-pattern-select").innerHTML = DAY_PATTERNS.map((item, index) => `<option value="${item.id}" ${item.id === day.id ? "selected" : ""}>${index + 1}. ${item[state.language]}</option>`).join("");
+    const scores = calculateMealScores(day.selection, "day");
+    $("#usual-day-card").innerHTML = `<small>${DAY_PATTERNS.findIndex(item => item.id === day.id) + 1} / ${DAY_PATTERNS.length}</small><h3>${day[state.language]}</h3><p>${day.note[state.language]}</p><div><span>${t("variety")} <b>${scores.variety}</b></span><span>${t("support")} <b>${scores.support}</b></span></div>`;
+    $$("[data-story-kind]").forEach(button => button.classList.toggle("active", button.dataset.storyKind === state.storyKind));
+    const visibleStories = QUICK_STORIES.filter(item => item.kind === state.storyKind);
+    $("#story-options").innerHTML = visibleStories.map(item => `<button type="button" class="story-option ${item.id === story.id ? "selected" : ""}" data-story-exposure="${item.id}" aria-pressed="${item.id === story.id}"><span>${item.icon}</span><strong>${item[state.language]}</strong><small>${item.note[state.language]}</small></button>`).join("");
+    $("#story-evidence").innerHTML = `${story.note[state.language]}${story.source ? ` <a href="${story.source}" target="_blank" rel="noreferrer">${copy.source} ↗</a>` : ""}`;
+    renderStoryChart(exposureRun);
+    saveState();
   }
 
   function renderFilters() {
@@ -403,6 +460,7 @@
       prebiotic: { title: "Via bifidogenica prebiotica", copy: "Fruttani tipo inulina e GOS favoriscono alcuni fermentatori primari. Acetato e lattato possono poi nutrire produttori secondari di butirrato.", nodes: [["Inulina / GOS", "substrato"], ["Bifidobatteri", "uso primario"], ["Cross-feeder", "uso secondario"], ["Acetato + butirrato", "metaboliti"]] },
       polyphenol: { title: "Biotrasformazione dei polifenoli", copy: "Molti polifenoli vengono trasformati prima o nel colon. Microbi e metaboliti rispondono, ma la causalità dipende dal composto e dalla persona.", nodes: [["Polifenoli", "matrice alimentare"], ["Biotrasformatori", "conversione"], ["Acidi fenolici", "metaboliti"], ["Variazione comunitaria", "associazione"]] },
       fermented: { title: "Esposizione ad alimenti fermentati", copy: "Microbi alimentari e prodotti della fermentazione entrano ripetutamente. La persistenza è di solito limitata, ma diversità e marker immunitari possono cambiare.", nodes: [["Cibo fermentato", "esposizione"], ["Microbi transitori", "passaggio"], ["Rete residente", "interazione"], ["Contesto immunitario", "risposta dell'ospite"]] },
+      alcohol: { title: "Pressione perturbativa dell'etanolo", copy: "Lo scenario alcol applica una piccola perturbazione ecologica generica. Tipo di bevanda, dose e modalità di consumo contano; il modello non definisce un consumo sicuro né un beneficio per la salute.", nodes: [["Bevanda alcolica", "esposizione"], ["Etanolo", "perturbazione"], ["Rete residente", "selezione"], ["Variazione comunitaria", "scenario"]] },
       protein: { title: "Pressione da proteine e acidi biliari", copy: "Le proteine che raggiungono il colon sostengono la fermentazione degli amminoacidi; più grassi saturi possono modificare il flusso biliare e favorire organismi bile-tolleranti.", nodes: [["Proteine + grassi", "dieta"], ["Bile / peptidi", "substrati"], ["Gruppi tolleranti", "selezione"], ["Prodotti N/S", "metaboliti"]] },
       empty: { title: "Cross-feeding dei carboidrati complessi", copy: "Aggiungi alimenti per mostrare la via modellata più forte nell'ecosistema.", nodes: [["Matrice alimentare", "input"], ["Substrati", "colon"], ["Gruppi microbici", "ecologia"], ["Metaboliti", "output"]] }
     };
@@ -508,8 +566,26 @@
   function bindEvents() {
     $("#language-button").addEventListener("click", () => {
       state.language = state.language === "en" ? "it" : "en";
-      applyStaticCopy(); renderFilters(); renderFoodLibrary(); renderEvidence(); renderMealLibrary(); renderSimulation();
+      applyStaticCopy(); renderFilters(); renderFoodLibrary(); renderEvidence(); renderMealLibrary(); renderStory(); renderSimulation();
       if (state.selectedSpecies && $("#species-dialog").open) openSpeciesDialog(state.selectedSpecies);
+    });
+    $("#day-pattern-select").addEventListener("change", event => { state.storyDay = event.target.value; renderStory(); });
+    $(".story-kind-tabs").addEventListener("click", event => {
+      const button = event.target.closest("[data-story-kind]"); if (!button) return;
+      state.storyKind = button.dataset.storyKind;
+      state.storyExposure = QUICK_STORIES.find(item => item.kind === state.storyKind).id;
+      renderStory();
+    });
+    $("#story-options").addEventListener("click", event => {
+      const button = event.target.closest("[data-story-exposure]"); if (!button) return;
+      state.storyExposure = button.dataset.storyExposure;
+      renderStory();
+    });
+    $("#story-full-button").addEventListener("click", () => {
+      const { story, customDistribution } = storyScenario();
+      Object.assign(state, { selection: { ...story.selection }, baseline: "typical", mode: "meal", repeats: 10, exposure: 10, customDistribution });
+      renderDistributionEditor(); syncChoiceButtons(); renderFoodLibrary(); renderSimulation();
+      $("#model").scrollIntoView({ behavior: "smooth" });
     });
     $("#meal-library-button").addEventListener("click", () => { renderMealLibrary(); $("#meal-dialog").showModal(); });
     $("#meal-dialog-filters").addEventListener("click", event => { const button = event.target.closest("[data-meal-filter]"); if (!button) return; state.mealFilter = button.dataset.mealFilter; renderMealLibrary(); });
@@ -549,5 +625,5 @@
   }
 
   loadState();
-  applyStaticCopy(); renderFilters(); renderFoodLibrary(); renderEvidence(); renderDistributionEditor(); renderMealLibrary(); syncChoiceButtons(); initCanvas(); renderSimulation(); bindEvents();
+  applyStaticCopy(); renderFilters(); renderFoodLibrary(); renderEvidence(); renderDistributionEditor(); renderMealLibrary(); renderStory(); syncChoiceButtons(); initCanvas(); renderSimulation(); bindEvents();
 })();
