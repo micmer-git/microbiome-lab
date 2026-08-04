@@ -71,6 +71,26 @@
     { id: "light-snacker", en: "Light meals and snacks", it: "Pasti leggeri e spuntini", meals: ["yogurt-apple", "snack-plate", "tomato-pasta"], note: { en: "Yogurt and fruit · nuts and kefir · tomato pasta", it: "Yogurt e frutta · frutta secca e kefir · pasta al pomodoro" } }
   ].map(pattern => ({ ...pattern, selection: mergeMeals(...pattern.meals) }));
 
+  const FREQUENCY_GROUPS = [
+    { id: "staples", en: "Everyday grains", it: "Cereali quotidiani", foods: ["oats", "wholegrain", "pasta", "brown-rice", "white-bread"] },
+    { id: "legumes", en: "Legumes & starches", it: "Legumi e amidi", foods: ["lentils", "chickpeas", "beans", "cooled-potato", "peas"] },
+    { id: "fruit", en: "Fruit & avocado", it: "Frutta e avocado", foods: ["apple", "berries", "pear", "ripe-banana", "avocado"] },
+    { id: "vegetables", en: "Vegetables & alliums", it: "Verdure e allium", foods: ["onion-garlic", "broccoli", "leafy-greens", "tomato", "carrots"] },
+    { id: "fermented", en: "Fermented foods & drinks", it: "Fermentati e bevande", foods: ["yogurt", "kefir", "kimchi", "coffee", "kombucha"] },
+    { id: "animal", en: "Animal foods", it: "Alimenti animali", foods: ["eggs", "chicken", "salmon", "red-meat", "processed-meat"] },
+    { id: "western", en: "Western extras", it: "Extra occidentali", foods: ["cheese", "pizza", "burger", "upf-snack", "alcohol"] }
+  ];
+
+  const DEFAULT_FREQUENCIES = {
+    oats: 3, wholegrain: 4, pasta: 3, "brown-rice": 2, "white-bread": 2,
+    lentils: 2, chickpeas: 1, beans: 1, "cooled-potato": 1, peas: 2,
+    apple: 4, berries: 2, pear: 1, "ripe-banana": 3, avocado: 2,
+    "onion-garlic": 4, broccoli: 2, "leafy-greens": 3, tomato: 5, carrots: 3,
+    yogurt: 4, kefir: 1, kimchi: 1, coffee: 5, kombucha: 0,
+    eggs: 3, chicken: 4, salmon: 2, "red-meat": 2, "processed-meat": 1,
+    cheese: 3, pizza: 1, burger: 1, "upf-snack": 2, alcohol: 2
+  };
+
   const QUICK_STORIES = [
     { id: "coffee", kind: "food", icon: "∿", en: "One coffee", it: "Un caffè", selection: { coffee: 1 }, note: { en: "A reproducible food–species association; not proof of a health effect.", it: "Associazione cibo–specie riproducibile; non prova un effetto sulla salute." }, source: "https://www.nature.com/articles/s41564-024-01858-9" },
     { id: "kombucha", kind: "food", icon: "◌", en: "One kombucha", it: "Una kombucha", selection: { kombucha: 1 }, note: { en: "Small trials show modest, product-variable microbiome effects.", it: "Piccoli studi mostrano effetti modesti e variabili tra prodotti." }, source: "https://pubmed.ncbi.nlm.nih.gov/39738315/" },
@@ -85,8 +105,8 @@
   ];
 
   const STORY_UI = {
-    en: { kicker: "Start with your real routine", title: "What does your usual day look like?", intro: "Choose one of 20 preloaded day patterns. It creates a modelled starting ecology—not a stool-test result.", step1: "1 · Starting point", chooseDay: "Choose your usual day", baselineNote: "Modelled from 10 repeats of this day", step2: "2 · Try one exposure", foods: "5 foods & drinks", meals: "5 meals", step3: "3 · See the nudge", once: "After one", ten: "After 10×", start: "Start", compare: "Largest modelled species changes", fullLab: "Open this in the full lab", source: "Evidence note", disclaimer: "Directional scenario only. One meal can change substrates before stool abundance, and 10× is a repeated-exposure thought experiment." },
-    it: { kicker: "Parti dalla tua routine", title: "Com'è la tua giornata abituale?", intro: "Scegli uno dei 20 schemi giornalieri precaricati. Crea un'ecologia iniziale modellata, non il risultato di un test fecale.", step1: "1 · Punto di partenza", chooseDay: "Scegli la tua giornata abituale", baselineNote: "Modellata da 10 ripetizioni di questa giornata", step2: "2 · Prova un'esposizione", foods: "5 alimenti e bevande", meals: "5 pasti", step3: "3 · Osserva la spinta", once: "Dopo una", ten: "Dopo 10×", start: "Inizio", compare: "Principali variazioni modellate", fullLab: "Apri nel laboratorio completo", source: "Nota sulle evidenze", disclaimer: "Solo scenario direzionale. Un pasto può cambiare i substrati prima dell'abbondanza fecale; 10× è un esperimento mentale su esposizioni ripetute." }
+    en: { kicker: "Start with your real routine", title: "How often do you eat these foods?", intro: "Seven quick screens, five foods each. Score each food from 0 to 5 times per week to build a modelled starting ecology—not a stool-test result.", step1: "1 · Weekly routine", frequencyPrompt: "Times per week", baselineNote: "Example frequencies are preloaded. Adjust all 35 to yours; this is still not a measured microbiome.", previous: "Previous", next: "Next five", finish: "Baseline ready ✓", screen: "Screen", rated: "foods rated", step2: "2 · Try one exposure", foods: "5 foods & drinks", meals: "5 meals", step3: "3 · All 20 species", once: "After one", ten: "After 10×", start: "Start", compare: "Same species, same position", mapHelp: "Select any species to open its digestion, metabolic, immune and neuroactive evidence profile.", fullLab: "Open this in the full lab", source: "Evidence note", disclaimer: "Dot positions never move. Filled size is the modelled start; the cyan ring is one exposure and the outer green/coral ring is 10×. This remains a directional thought experiment, not a measured microbiome." },
+    it: { kicker: "Parti dalla tua routine", title: "Quanto spesso mangi questi alimenti?", intro: "Sette schermate rapide, cinque alimenti ciascuna. Valuta ogni alimento da 0 a 5 volte a settimana per costruire un'ecologia iniziale modellata, non il risultato di un test fecale.", step1: "1 · Routine settimanale", frequencyPrompt: "Volte a settimana", baselineNote: "Le frequenze di esempio sono precaricate. Adatta tutti i 35 alimenti alle tue abitudini; non è comunque un microbioma misurato.", previous: "Indietro", next: "Prossimi cinque", finish: "Baseline pronta ✓", screen: "Schermata", rated: "alimenti valutati", step2: "2 · Prova un'esposizione", foods: "5 alimenti e bevande", meals: "5 pasti", step3: "3 · Tutte le 20 specie", once: "Dopo una", ten: "Dopo 10×", start: "Inizio", compare: "Stesse specie, stessa posizione", mapHelp: "Seleziona una specie per aprire il profilo di evidenze su digestione, metabolismo, immunità e neuroattivi.", fullLab: "Apri nel laboratorio completo", source: "Nota sulle evidenze", disclaimer: "Le posizioni non cambiano mai. La dimensione piena è l'inizio modellato; l'anello azzurro è una esposizione e l'anello esterno verde/corallo è 10×. Resta un esperimento direzionale, non un microbioma misurato." }
   };
 
   const SOURCES = {
@@ -181,5 +201,5 @@
     oats: "Avena", lentils: "Lenticchie", chickpeas: "Ceci", beans: "Fagioli", "cooled-potato": "Patate raffreddate", "green-banana": "Banana verde", apple: "Mela", berries: "Frutti di bosco", "onion-garlic": "Cipolla e aglio", artichoke: "Carciofo", broccoli: "Broccoli", wholegrain: "Pane integrale", almonds: "Mandorle", cocoa: "Cacao fondente", coffee: "Caffè", kombucha: "Kombucha", alcohol: "Bevanda alcolica", "olive-oil": "Olio extravergine", kefir: "Kefir", yogurt: "Yogurt vivo", kimchi: "Kimchi / crauti", "red-meat": "Carne rossa", "processed-meat": "Carne lavorata", cheese: "Formaggio stagionato", "upf-snack": "Snack ultra-processato", eggs: "Uova", chicken: "Pollo", salmon: "Salmone", "white-bread": "Pane bianco", pasta: "Pasta", "brown-rice": "Riso integrale", "white-rice": "Riso bianco", "leafy-greens": "Verdure a foglia", tomato: "Pomodoro", avocado: "Avocado", carrots: "Carote", peas: "Piselli", pear: "Pera", "ripe-banana": "Banana matura", walnuts: "Noci", milk: "Latte", butter: "Burro", "sugary-drink": "Bibita zuccherata", fries: "Patatine fritte", pizza: "Pizza", burger: "Burger", "sweet-cereal": "Cereali dolci", pancakes: "Pancake"
   };
 
-  return { MEALS, DAY_PATTERNS, QUICK_STORIES, STORY_UI, SOURCES, SPECIES_INFO, SPECIES_BASES: common, UI, FOOD_IT };
+  return { MEALS, DAY_PATTERNS, FREQUENCY_GROUPS, DEFAULT_FREQUENCIES, QUICK_STORIES, STORY_UI, SOURCES, SPECIES_INFO, SPECIES_BASES: common, UI, FOOD_IT };
 });

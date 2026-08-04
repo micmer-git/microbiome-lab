@@ -4,12 +4,14 @@ An interactive, evidence-aware model for exploring how one meal or one day may a
 
 The model is deliberately conservative: a food log cannot reconstruct a person's stool metagenome, and a single meal does not imply an instantly measurable abundance shift. The site keeps estimated ecological pressure separate from measured biology.
 
-## What v0.4 does
+## What v0.5 does
 
-- Uses a mobile-first, larger-type guided start: select one of 20 usual-day patterns, then compare one exposure with 10 repeated exposures.
+- Uses a seven-screen weekly-frequency onboarding: rate 35 common foods from 0–5 times per week to condition the modeled starting ecology.
 - Works in English or Italian and composes one meal or one day from 48 foods and food matrices.
 - Includes an atlas of 30 Western-style meal examples, each with transparent variety and microbiome-support scenario scores.
 - Offers five single food/drink stories and five meal stories, including coffee, kombucha and a generic alcoholic-drink scenario with evidence cautions.
+- Keeps all 20 species in fixed visual positions while comparing the modeled start, one exposure and 10 repeated exposures.
+- Uses a larger readability floor for controls, explanations, evidence cards and charts on both mobile and desktop.
 - Starts from one of three presets or an editable 20-species relative distribution.
 - Repeats the same exposure 1–10 times with saturating, baseline-dependent dynamics.
 - Shows an animated, clickable 20-species community; each species opens an evidence-graded digestion, metabolic, immune and neuroactive profile.

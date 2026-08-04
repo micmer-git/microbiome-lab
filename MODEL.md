@@ -1,6 +1,6 @@
 # Model specification
 
-Version 0.4 · August 2026
+Version 0.5 · August 2026
 
 ## Purpose
 
@@ -70,11 +70,13 @@ Two 0–100 heuristics summarize only the modeled food-feature mix:
 
 Both scores are bounded display indices. They are not validated clinical endpoints, diet-quality scores or estimates of alpha diversity. The “top responders” shown on a meal card are the two species receiving the largest positive model coefficient under a mixed starting ecology; they are not organisms proven to increase in every person.
 
-## Guided usual-day baseline
+## Guided weekly-frequency baseline
 
-The mobile-first onboarding offers 20 preloaded usual-day patterns. Selecting one runs that day pattern for 10 modeled day exposures from the generic mixed preset; the resulting normalized species state becomes the starting ecology for the chosen food, drink or meal story. This is a transparent scenario construction, not an inference of the visitor's real microbiome from a food questionnaire.
+The mobile-first onboarding presents seven screens of five common foods. Each item is rated from 0 to 5 times per week. Example frequencies are preloaded and editable. The weekly values are converted to average daily portions by dividing by seven, then run for 10 modeled day exposures from the generic mixed preset. The resulting normalized species state becomes the starting ecology for the chosen food, drink or meal story. This is a transparent scenario construction, not an inference of the visitor's real microbiome from a food-frequency questionnaire.
 
 The story view then compares the modeled start, one meal-sized exposure and 10 repeated meal-sized exposures. The coffee scenario encodes the replicated *Lawsonibacter* association already described in the species layer. Kombucha uses a mild fermented-food and tea-polyphenol feature mix because small human trials report modest and product-variable effects. The generic alcoholic-drink scenario encodes a small ethanol pressure; it does not model beverage-specific polyphenols, establish a safe dose or outweigh the health risks of alcohol.
+
+All 20 story and community nodes use a stable species order and fixed coordinates. Abundance changes alter dot or ring size and direction styling, not position. This makes within-scenario comparisons easier but does not imply physical proximity or ecological interaction between neighboring dots.
 
 ## Ecological update
 

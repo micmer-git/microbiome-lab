@@ -31,14 +31,14 @@
     <main id="top">
       <section class="hero section-shell">
         <div class="hero-copy">
-          <p class="eyebrow">A living systems experiment · v0.4</p>
+          <p class="eyebrow">A living systems experiment · v0.5</p>
           <h1>Your gut is an <em>ecosystem</em>, not a score.</h1>
           <p class="hero-lede">
             Build one meal or one day. See the directional nudge across 20 gut species, then repeat
             the same exposure to explore how baseline-dependent ecological pressure may accumulate.
           </p>
           <div class="hero-actions">
-            <a class="primary-button" href="#story">Start with your usual day <span>↓</span></a>
+            <a class="primary-button" href="#story">Describe your usual week <span>↓</span></a>
             <button class="text-button" id="load-demo" type="button">Load the fibre-rich meal</button>
           </div>
           <div class="trust-line">
@@ -68,11 +68,19 @@
 
           <div class="story-flow">
             <section class="story-step story-baseline-step">
-              <p class="story-step-label" id="story-step-1">1 · Starting point</p>
-              <label for="day-pattern-select" id="day-pattern-label">Choose your usual day</label>
-              <select id="day-pattern-select"></select>
-              <article class="usual-day-card" id="usual-day-card"></article>
-              <p class="story-baseline-note" id="story-baseline-note">Modelled from 10 repeats of this day</p>
+              <p class="story-step-label" id="story-step-1">1 · Weekly routine</p>
+              <div class="frequency-head">
+                <div><small id="frequency-screen-label">Screen 1 / 7</small><h3 id="frequency-group-title">Everyday grains</h3></div>
+                <strong id="frequency-rated">35 foods rated</strong>
+              </div>
+              <div class="frequency-progress" aria-hidden="true"><i id="frequency-progress-bar"></i></div>
+              <p class="frequency-prompt" id="frequency-prompt">Times per week</p>
+              <div class="frequency-foods" id="frequency-foods"></div>
+              <div class="frequency-nav">
+                <button id="frequency-prev" type="button">Previous</button>
+                <button id="frequency-next" type="button">Next five</button>
+              </div>
+              <p class="story-baseline-note" id="story-baseline-note">35 foods condition the modelled starting ecology</p>
             </section>
 
             <section class="story-step story-choice-step">
@@ -90,6 +98,7 @@
                 <div><p class="story-step-label" id="story-step-3">3 · See the nudge</p><h3 id="story-result-title">Largest modelled species changes</h3></div>
                 <div class="story-legend"><span><i class="start"></i><b id="story-start-label">Start</b></span><span><i class="once"></i><b id="story-once-label">After one</b></span><span><i class="ten"></i><b id="story-ten-label">After 10×</b></span></div>
               </div>
+              <p class="story-map-help" id="story-map-help">Select any species to open its evidence profile.</p>
               <svg id="story-chart" viewBox="0 0 680 310" role="img" aria-label="Starting microbiome compared with one and ten repeated exposures"></svg>
               <p class="story-disclaimer" id="story-disclaimer"></p>
               <button class="story-full-button" id="story-full-button" type="button">Open this in the full lab</button>

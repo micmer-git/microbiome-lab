@@ -146,6 +146,28 @@ test("guided onboarding contains 20 valid day patterns and ten stories", () => {
   }
 });
 
+test("weekly-frequency onboarding has seven screens of five valid foods", () => {
+  const foodIds = new Set(model.FOODS.map(food => food.id));
+  assert.equal(content.FREQUENCY_GROUPS.length, 7);
+  assert.equal(content.FREQUENCY_GROUPS.flatMap(group => group.foods).length, 35);
+  assert.equal(new Set(content.FREQUENCY_GROUPS.flatMap(group => group.foods)).size, 35);
+  for (const group of content.FREQUENCY_GROUPS) {
+    assert.equal(group.foods.length, 5);
+    assert.ok(group.en && group.it);
+    assert.ok(group.foods.every(id => foodIds.has(id)));
+  }
+  assert.ok(Object.values(content.DEFAULT_FREQUENCIES).every(value => Number.isInteger(value) && value >= 0 && value <= 5));
+});
+
+test("changing weekly frequencies changes the modeled starting ecology", () => {
+  const highPlant = Object.fromEntries(content.FREQUENCY_GROUPS.flatMap(group => group.foods).map(id => [id, ["lentils", "beans", "oats", "broccoli", "berries"].includes(id) ? 5 / 7 : 0]));
+  const western = Object.fromEntries(content.FREQUENCY_GROUPS.flatMap(group => group.foods).map(id => [id, ["burger", "pizza", "processed-meat", "alcohol"].includes(id) ? 5 / 7 : 0]));
+  const plantStart = model.simulateExposure(highPlant, "typical", "day", 10).trajectory[10].species;
+  const westernStart = model.simulateExposure(western, "typical", "day", 10).trajectory[10].species;
+  assert.ok(plantStart.faecalibacterium > westernStart.faecalibacterium);
+  assert.ok(westernStart.bilophila > plantStart.bilophila);
+});
+
 test("coffee, kombucha and alcohol scenarios stay bounded through ten exposures", () => {
   for (const id of ["coffee", "kombucha", "alcohol"]) {
     const result = model.simulateExposure({ [id]: 1 }, "typical", "meal", 10);

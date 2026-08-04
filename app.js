@@ -2,7 +2,7 @@
   "use strict";
 
   const { FOODS, GUILDS, SPECIES, simulateExposure, speciesBaseline, dominantPathway, calculateMealScores } = window.MicrobiomeModel;
-  const { MEALS, DAY_PATTERNS, QUICK_STORIES, STORY_UI, SPECIES_INFO, SPECIES_BASES, UI, FOOD_IT } = window.MicrobiomeContent;
+  const { MEALS, FREQUENCY_GROUPS, DEFAULT_FREQUENCIES, QUICK_STORIES, STORY_UI, SPECIES_INFO, SPECIES_BASES, UI, FOOD_IT } = window.MicrobiomeContent;
   const $ = selector => document.querySelector(selector);
   const $$ = selector => [...document.querySelectorAll(selector)];
 
@@ -19,7 +19,7 @@
 
   const CATEGORY_LABELS = { all: "All", grains: "Grains", legumes: "Legumes", fruit: "Fruit", plants: "Plants", fermented: "Fermented", polyphenols: "Polyphenols", animal: "Animal", other: "Other" };
   const preferredLanguage = navigator.language && navigator.language.toLowerCase().startsWith("it") ? "it" : "en";
-  const state = { selection: {}, baseline: "typical", mode: "meal", repeats: 5, exposure: 5, customDistribution: null, foodFilter: "all", evidenceFilter: "all", mealFilter: "all", language: preferredLanguage, query: "", result: null, selectedSpecies: null, storyDay: "mixed", storyKind: "food", storyExposure: "coffee" };
+  const state = { selection: {}, baseline: "typical", mode: "meal", repeats: 5, exposure: 5, customDistribution: null, foodFilter: "all", evidenceFilter: "all", mealFilter: "all", language: preferredLanguage, query: "", result: null, selectedSpecies: null, storyKind: "food", storyExposure: "coffee", frequencyPage: 0, foodFrequency: { ...DEFAULT_FREQUENCIES } };
   const t = key => UI[state.language][key] || UI.en[key] || key;
   const foodName = food => state.language === "it" ? (FOOD_IT[food.id] || food.name) : food.name;
 
@@ -31,9 +31,10 @@
       if (["typical", "plant", "lowFiber"].includes(saved.baseline)) state.baseline = saved.baseline;
       if (["meal", "day"].includes(saved.mode)) state.mode = saved.mode;
       if (["en", "it"].includes(saved.language)) state.language = saved.language;
-      if (DAY_PATTERNS.some(day => day.id === saved.storyDay)) state.storyDay = saved.storyDay;
       if (["food", "meal"].includes(saved.storyKind)) state.storyKind = saved.storyKind;
       if (QUICK_STORIES.some(story => story.id === saved.storyExposure)) state.storyExposure = saved.storyExposure;
+      state.frequencyPage = Math.max(0, Math.min(FREQUENCY_GROUPS.length - 1, Number(saved.frequencyPage) || 0));
+      if (saved.foodFrequency) state.foodFrequency = Object.fromEntries(Object.keys(DEFAULT_FREQUENCIES).map(id => [id, Math.max(0, Math.min(5, Number(saved.foodFrequency[id]) || 0))]));
       state.repeats = Math.max(1, Math.min(10, Number(saved.repeats) || 5));
       state.exposure = state.repeats;
       if (saved.customDistribution) state.customDistribution = saved.customDistribution;
@@ -42,7 +43,7 @@
 
   function saveState() {
     try {
-      localStorage.setItem("microbiome-exposure-v2", JSON.stringify({ selection: state.selection, baseline: state.baseline, mode: state.mode, repeats: state.repeats, customDistribution: state.customDistribution, language: state.language, storyDay: state.storyDay, storyKind: state.storyKind, storyExposure: state.storyExposure }));
+      localStorage.setItem("microbiome-exposure-v2", JSON.stringify({ selection: state.selection, baseline: state.baseline, mode: state.mode, repeats: state.repeats, customDistribution: state.customDistribution, language: state.language, storyKind: state.storyKind, storyExposure: state.storyExposure, frequencyPage: state.frequencyPage, foodFrequency: state.foodFrequency }));
     } catch (_) { /* The model still works without browser storage. */ }
   }
 
@@ -52,10 +53,10 @@
     [".site-header nav a:nth-child(2)", "Model", "Modello"],
     [".site-header nav a:nth-child(3)", "Biology", "Biologia"],
     [".site-header nav a:nth-child(4)", "Evidence", "Evidenze"],
-    [".hero-copy .eyebrow", "A living systems experiment · v0.4", "Un esperimento sui sistemi viventi · v0.4"],
+    [".hero-copy .eyebrow", "A living systems experiment · v0.5", "Un esperimento sui sistemi viventi · v0.5"],
     [".hero-copy h1", "Your gut is an <em>ecosystem</em>, not a score.", "Il tuo intestino è un <em>ecosistema</em>, non un voto.", true],
     [".hero-lede", "Build one meal or one day. See the directional nudge across 20 gut species, then repeat the same exposure to explore how baseline-dependent ecological pressure may accumulate.", "Costruisci un pasto o una giornata. Osserva la spinta direzionale su 20 specie intestinali e ripeti l'esposizione per esplorare come la pressione ecologica dipenda dal punto di partenza."],
-    [".hero-actions .primary-button", "Start with your usual day <span>↓</span>", "Parti dalla tua giornata abituale <span>↓</span>", true],
+    [".hero-actions .primary-button", "Describe your usual week <span>↓</span>", "Descrivi la tua settimana abituale <span>↓</span>", true],
     ["#load-demo", "Load the fibre-rich meal", "Carica il pasto ricco di fibre"],
     [".trust-line span:nth-of-type(1)", "Human studies", "Studi sull'uomo"],
     [".trust-line span:nth-of-type(2)", "Mechanism-aware", "Attento ai meccanismi"],
@@ -177,52 +178,63 @@
   }
 
   function storyScenario() {
-    const day = DAY_PATTERNS.find(item => item.id === state.storyDay) || DAY_PATTERNS[0];
     const story = QUICK_STORIES.find(item => item.id === state.storyExposure) || QUICK_STORIES[0];
-    const baselineRun = simulateExposure(day.selection, "typical", "day", 10);
+    const weeklySelection = Object.fromEntries(Object.entries(state.foodFrequency).filter(([, frequency]) => frequency > 0).map(([id, frequency]) => [id, frequency / 7]));
+    const baselineRun = simulateExposure(weeklySelection, "typical", "day", 10);
     const customDistribution = baselineRun.trajectory[10].species;
     const exposureRun = simulateExposure(story.selection, "typical", "meal", 10, customDistribution);
-    return { day, story, customDistribution, exposureRun };
+    return { story, weeklySelection, customDistribution, exposureRun };
   }
 
   function renderStoryChart(exposureRun) {
     const start = exposureRun.trajectory[0].species;
     const once = exposureRun.trajectory[1].species;
     const ten = exposureRun.trajectory[10].species;
-    const keys = Object.keys(SPECIES).sort((a, b) => Math.abs(ten[b] - start[b]) - Math.abs(ten[a] - start[a])).slice(0, 6);
+    const keys = Object.keys(SPECIES);
     const mobile = window.innerWidth <= 760;
-    const width = mobile ? 420 : 680, height = 310, pad = { l: mobile ? 116 : 166, r: mobile ? 46 : 48, t: 24, b: 28 };
-    const maxValue = Math.max(.04, Math.ceil(Math.max(...keys.flatMap(key => [start[key], once[key], ten[key]])) * 20) / 20);
-    const x = value => pad.l + value / maxValue * (width - pad.l - pad.r);
-    const ticks = [0, maxValue / 2, maxValue];
-    const grid = ticks.map(value => `<line x1="${x(value)}" y1="${pad.t - 8}" x2="${x(value)}" y2="${height - pad.b}"/><text class="axis-label" x="${x(value)}" y="${height - 6}" text-anchor="middle">${(100 * value).toFixed(value ? 1 : 0)}%</text>`).join("");
-    const rows = keys.map((key, index) => {
-      const y = pad.t + 20 + index * 40;
+    const width = mobile ? 420 : 720, columns = mobile ? 2 : 5, rows = mobile ? 10 : 4;
+    const height = mobile ? 930 : 440, cellWidth = width / columns, cellHeight = (height - 20) / rows;
+    const maxValue = Math.max(...keys.flatMap(key => [start[key], once[key], ten[key]]));
+    const radius = value => 7 + 21 * Math.sqrt(value / maxValue);
+    const nodes = keys.map((key, index) => {
+      const column = index % columns, row = Math.floor(index / columns);
+      const x = cellWidth * (column + .5), y = 42 + cellHeight * row;
       const delta = 100 * (ten[key] - start[key]);
-      return `<g class="story-chart-row">
-        <text class="species-name" x="${pad.l - 12}" y="${y + 4}" text-anchor="end">${SPECIES[key].short}</text>
-        <line class="change-line" x1="${x(start[key])}" y1="${y}" x2="${x(ten[key])}" y2="${y}"/>
-        <circle class="start-dot" cx="${x(start[key])}" cy="${y}" r="5"/>
-        <circle class="once-dot" cx="${x(once[key])}" cy="${y}" r="5"/>
-        <circle class="ten-dot" cx="${x(ten[key])}" cy="${y}" r="6"/>
-        <text class="delta-label ${delta >= 0 ? "up" : "down"}" x="${width - 4}" y="${y + 4}" text-anchor="end">${delta >= 0 ? "+" : ""}${delta.toFixed(2)} pp</text>
+      return `<g class="story-species-node" data-species-node="${key}" role="button" tabindex="0" aria-label="${SPECIES[key].name}, ${delta >= 0 ? "+" : ""}${delta.toFixed(2)} percentage points after ten exposures">
+        <title>${SPECIES[key].name}: ${(100 * start[key]).toFixed(2)}% → ${(100 * once[key]).toFixed(2)}% → ${(100 * ten[key]).toFixed(2)}%</title>
+        <circle class="ten-ring ${delta >= 0 ? "up" : "down"}" cx="${x}" cy="${y}" r="${radius(ten[key]).toFixed(1)}"/>
+        <circle class="once-ring" cx="${x}" cy="${y}" r="${radius(once[key]).toFixed(1)}"/>
+        <circle class="start-dot" cx="${x}" cy="${y}" r="${radius(start[key]).toFixed(1)}" fill="${SPECIES[key].color}"/>
+        <text class="species-name" x="${x}" y="${y + 39}" text-anchor="middle">${SPECIES[key].short}</text>
+        <text class="delta-label ${delta >= 0 ? "up" : "down"}" x="${x}" y="${y + 55}" text-anchor="middle">${delta >= 0 ? "+" : ""}${delta.toFixed(2)} pp</text>
       </g>`;
     }).join("");
     $("#story-chart").setAttribute("viewBox", `0 0 ${width} ${height}`);
-    $("#story-chart").innerHTML = `<title>${STORY_UI[state.language].compare}</title><desc>${STORY_UI[state.language].disclaimer}</desc>${grid}${rows}`;
+    $("#story-chart").innerHTML = `<title>${STORY_UI[state.language].compare}</title><desc>${STORY_UI[state.language].disclaimer}</desc>${nodes}`;
   }
 
   function renderStory() {
     const copy = STORY_UI[state.language];
-    const { day, story, exposureRun } = storyScenario();
-    const copyMap = { "story-kicker": copy.kicker, "story-title": copy.title, "story-intro": copy.intro, "story-step-1": copy.step1, "day-pattern-label": copy.chooseDay, "story-baseline-note": copy.baselineNote, "story-step-2": copy.step2, "story-foods-tab": copy.foods, "story-meals-tab": copy.meals, "story-step-3": copy.step3, "story-result-title": copy.compare, "story-start-label": copy.start, "story-once-label": copy.once, "story-ten-label": copy.ten, "story-disclaimer": copy.disclaimer, "story-full-button": copy.fullLab };
+    const { story, exposureRun } = storyScenario();
+    const group = FREQUENCY_GROUPS[state.frequencyPage];
+    const copyMap = { "story-kicker": copy.kicker, "story-title": copy.title, "story-intro": copy.intro, "story-step-1": copy.step1, "frequency-prompt": copy.frequencyPrompt, "story-baseline-note": copy.baselineNote, "story-step-2": copy.step2, "story-foods-tab": copy.foods, "story-meals-tab": copy.meals, "story-step-3": copy.step3, "story-result-title": copy.compare, "story-start-label": copy.start, "story-once-label": copy.once, "story-ten-label": copy.ten, "story-map-help": copy.mapHelp, "story-disclaimer": copy.disclaimer, "story-full-button": copy.fullLab };
     Object.entries(copyMap).forEach(([id, value]) => { $("#" + id).textContent = value; });
-    $("#day-pattern-select").innerHTML = DAY_PATTERNS.map((item, index) => `<option value="${item.id}" ${item.id === day.id ? "selected" : ""}>${index + 1}. ${item[state.language]}</option>`).join("");
-    const scores = calculateMealScores(day.selection, "day");
-    $("#usual-day-card").innerHTML = `<small>${DAY_PATTERNS.findIndex(item => item.id === day.id) + 1} / ${DAY_PATTERNS.length}</small><h3>${day[state.language]}</h3><p>${day.note[state.language]}</p><div><span>${t("variety")} <b>${scores.variety}</b></span><span>${t("support")} <b>${scores.support}</b></span></div>`;
+    $("#frequency-screen-label").textContent = `${copy.screen} ${state.frequencyPage + 1} / ${FREQUENCY_GROUPS.length}`;
+    $("#frequency-group-title").textContent = group[state.language];
+    $("#frequency-rated").textContent = `${Object.keys(state.foodFrequency).length} ${copy.rated}`;
+    $("#frequency-progress-bar").style.width = `${100 * (state.frequencyPage + 1) / FREQUENCY_GROUPS.length}%`;
+    $("#frequency-foods").innerHTML = group.foods.map(id => {
+      const food = FOODS.find(item => item.id === id), frequency = state.foodFrequency[id] || 0;
+      return `<div class="frequency-food"><div class="frequency-food-name"><span aria-hidden="true">${food.icon}</span><strong>${foodName(food)}</strong></div><div class="frequency-scale" role="group" aria-label="${foodName(food)} · ${copy.frequencyPrompt}">${[0,1,2,3,4,5].map(value => `<button type="button" data-frequency-food="${id}" data-frequency-value="${value}" class="${frequency === value ? "active" : ""}" aria-pressed="${frequency === value}">${value}</button>`).join("")}</div></div>`;
+    }).join("");
+    $("#frequency-prev").textContent = copy.previous;
+    $("#frequency-next").textContent = state.frequencyPage === FREQUENCY_GROUPS.length - 1 ? copy.finish : copy.next;
+    $("#frequency-prev").disabled = state.frequencyPage === 0;
+    $("#frequency-next").disabled = state.frequencyPage === FREQUENCY_GROUPS.length - 1;
     $$("[data-story-kind]").forEach(button => button.classList.toggle("active", button.dataset.storyKind === state.storyKind));
     const visibleStories = QUICK_STORIES.filter(item => item.kind === state.storyKind);
     $("#story-options").innerHTML = visibleStories.map(item => `<button type="button" class="story-option ${item.id === story.id ? "selected" : ""}" data-story-exposure="${item.id}" aria-pressed="${item.id === story.id}"><span>${item.icon}</span><strong>${item[state.language]}</strong><small>${item.note[state.language]}</small></button>`).join("");
+    requestAnimationFrame(() => { if (window.innerWidth <= 760) $("#story-options").scrollLeft = Math.max(0, visibleStories.findIndex(item => item.id === story.id)) * $("#story-options").clientWidth * .84; });
     $("#story-evidence").innerHTML = `${story.note[state.language]}${story.source ? ` <a href="${story.source}" target="_blank" rel="noreferrer">${copy.source} ↗</a>` : ""}`;
     renderStoryChart(exposureRun);
     saveState();
@@ -310,42 +322,37 @@
   function renderCommunity(point) {
     const svg = $("#community-chart");
     const start = state.result.trajectory[0].species;
-    const order = Object.keys(SPECIES).sort((a, b) => point.species[b] - point.species[a]);
+    const order = Object.keys(SPECIES);
     const maxValue = Math.max(...Object.values(point.species));
-    const top = new Set(topResponders().slice(0, 7));
-    const centerX = 360, centerY = 215;
+    const mobile = window.innerWidth <= 760, width = mobile ? 420 : 720, height = mobile ? 930 : 430, columns = mobile ? 2 : 5;
+    const rows = Math.ceil(order.length / columns), cellWidth = width / columns, cellHeight = (height - 30) / rows;
     const nodes = order.map((key, index) => {
-      const ring = index < 7 ? 118 : index < 14 ? 170 : 203;
-      const ringIndex = index < 7 ? index : index < 14 ? index - 7 : index - 14;
-      const ringCount = index < 7 ? 7 : index < 14 ? 7 : 6;
-      const angle = -Math.PI / 2 + (ringIndex / ringCount) * Math.PI * 2 + (index >= 7 ? .23 : 0);
-      const x = centerX + Math.cos(angle) * ring * 1.44;
-      const y = centerY + Math.sin(angle) * ring * .88;
+      const column = index % columns, row = Math.floor(index / columns);
+      const x = cellWidth * (column + .5), y = 45 + cellHeight * row;
       const value = point.species[key], delta = value - start[key];
-      const radius = 10 + 17 * Math.sqrt(value / maxValue);
+      const radius = 8 + 16 * Math.sqrt(value / maxValue);
       const direction = delta > .00005 ? "up" : delta < -.00005 ? "down" : "flat";
-      const labelY = radius + 13;
+      const labelY = radius + 16;
       return `<g class="community-node ${direction}" data-species-node="${key}" role="button" tabindex="0" transform="translate(${x.toFixed(1)} ${y.toFixed(1)})" aria-label="${SPECIES[key].name}, ${(100 * value).toFixed(2)} percent">
         <title>${SPECIES[key].name}: ${(100 * value).toFixed(2)}%, ${delta >= 0 ? "+" : ""}${(100 * delta).toFixed(2)} percentage points</title>
         <circle class="node-halo" r="${radius + 7}" stroke="${direction === "down" ? "#ff8c72" : SPECIES[key].color}" style="--pulse-delay:${(index * .11).toFixed(2)}s"/>
         <circle class="node-core" r="${radius}" fill="${SPECIES[key].color}"/>
         <circle class="node-glint" cx="${(-radius * .27).toFixed(1)}" cy="${(-radius * .28).toFixed(1)}" r="${Math.max(2, radius * .17).toFixed(1)}"/>
-        ${top.has(key) || value > .05 ? `<text y="${labelY}" text-anchor="middle">${SPECIES[key].short}</text>` : ""}
+        <text y="${labelY}" text-anchor="middle">${SPECIES[key].short}</text>
       </g>`;
     }).join("");
     const mealLabel = state.result.diet.foods.length ? `${state.result.diet.foods.length} ${t("foods")}` : (state.language === "it" ? "aggiungi cibo" : "add food");
-    svg.innerHTML = `<title>${t("communityTitle")}</title><defs><radialGradient id="community-core"><stop offset="0" stop-color="#dfff73" stop-opacity=".2"/><stop offset="1" stop-color="#dfff73" stop-opacity="0"/></radialGradient></defs>
-      <circle class="community-field" cx="${centerX}" cy="${centerY}" r="93"/><circle class="community-orbit" cx="${centerX}" cy="${centerY}" r="75"/>
-      <g class="community-center"><circle cx="${centerX}" cy="${centerY}" r="47"/><text x="${centerX}" y="${centerY - 3}" text-anchor="middle">${state.mode === "meal" ? t("oneMeal") : t("oneDay")}</text><text x="${centerX}" y="${centerY + 13}" text-anchor="middle">${mealLabel}</text></g>${nodes}`;
+    svg.setAttribute("viewBox", `0 0 ${width} ${height}`);
+    svg.innerHTML = `<title>${t("communityTitle")}</title><desc>${state.language === "it" ? "Le 20 specie mantengono sempre la stessa posizione; dimensione e alone cambiano con lo scenario." : "All 20 species keep the same position; size and halo change with the scenario."}</desc>${nodes}<text class="community-caption" x="${width / 2}" y="${height - 5}" text-anchor="middle">${state.mode === "meal" ? t("oneMeal") : t("oneDay")} · ${mealLabel}</text>`;
   }
 
   function evidenceLabel(level) {
     return t(`evidence${level.charAt(0).toUpperCase()}${level.slice(1)}`);
   }
 
-  function openSpeciesDialog(key) {
+  function openSpeciesDialog(key, contextResult = state.result, contextExposure = state.exposure) {
     const species = SPECIES[key], info = SPECIES_INFO[key], base = SPECIES_BASES[info.base];
-    const point = state.result.trajectory[state.exposure], start = state.result.trajectory[0];
+    const point = contextResult.trajectory[Math.min(contextExposure, contextResult.repeats)], start = contextResult.trajectory[0];
     const delta = 100 * (point.species[key] - start.species[key]);
     const signals = [...base.signals, ...(info.extra || [])];
     const presentDomains = new Set(signals.map(signal => signal.domain));
@@ -569,7 +576,13 @@
       applyStaticCopy(); renderFilters(); renderFoodLibrary(); renderEvidence(); renderMealLibrary(); renderStory(); renderSimulation();
       if (state.selectedSpecies && $("#species-dialog").open) openSpeciesDialog(state.selectedSpecies);
     });
-    $("#day-pattern-select").addEventListener("change", event => { state.storyDay = event.target.value; renderStory(); });
+    $("#frequency-foods").addEventListener("click", event => {
+      const button = event.target.closest("[data-frequency-food]"); if (!button) return;
+      state.foodFrequency[button.dataset.frequencyFood] = Number(button.dataset.frequencyValue);
+      renderStory();
+    });
+    $("#frequency-prev").addEventListener("click", () => { state.frequencyPage = Math.max(0, state.frequencyPage - 1); renderStory(); });
+    $("#frequency-next").addEventListener("click", () => { state.frequencyPage = Math.min(FREQUENCY_GROUPS.length - 1, state.frequencyPage + 1); renderStory(); });
     $(".story-kind-tabs").addEventListener("click", event => {
       const button = event.target.closest("[data-story-kind]"); if (!button) return;
       state.storyKind = button.dataset.storyKind;
@@ -599,10 +612,12 @@
       const target = event.target.closest("[data-species-node]");
       if (!target || (event.type === "keydown" && !["Enter", " "].includes(event.key))) return;
       if (event.type === "keydown") event.preventDefault();
-      openSpeciesDialog(target.dataset.speciesNode);
+      if (target.closest("#story-chart")) openSpeciesDialog(target.dataset.speciesNode, storyScenario().exposureRun, 10);
+      else openSpeciesDialog(target.dataset.speciesNode);
     };
     $("#community-chart").addEventListener("click", activateSpecies); $("#community-chart").addEventListener("keydown", activateSpecies);
     $("#species-chart").addEventListener("click", activateSpecies); $("#species-chart").addEventListener("keydown", activateSpecies);
+    $("#story-chart").addEventListener("click", activateSpecies); $("#story-chart").addEventListener("keydown", activateSpecies);
     $("#food-filters").addEventListener("click", event => { const button = event.target.closest("[data-food-filter]"); if (!button) return; state.foodFilter = button.dataset.foodFilter; renderFilters(); renderFoodLibrary(); });
     $("#food-library").addEventListener("click", event => { const card = event.target.closest("[data-food]"); if (card) addFood(card.dataset.food, 1); });
     $("#selected-list").addEventListener("click", event => { const increase = event.target.closest("[data-increase]"), decrease = event.target.closest("[data-decrease]"); if (increase) addFood(increase.dataset.increase, 1); if (decrease) addFood(decrease.dataset.decrease, -1); });
