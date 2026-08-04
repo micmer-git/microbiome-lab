@@ -1,6 +1,6 @@
 # Model specification
 
-Version 0.5 · August 2026
+Version 0.6 · August 2026
 
 ## Purpose
 
@@ -17,6 +17,8 @@ The interactive view tracks 20 named gut species selected to span resistant-star
 Three presets provide different normalized starting distributions. Every value can also be edited; input values are treated as relative parts and normalized to 100%. The starting state is therefore an assumption unless it comes from an appropriate species-resolved assay.
 
 Foods are composed as either one meal or one full day. Each portion contributes substrate features. A meal uses a smaller dose scale than a day. Species pressure combines its primary functional-guild pressure with transparent species-specific modifiers—for example resistant starch for *Ruminococcus bromii*, inulin/GOS for bifidobacteria, coffee for *Lawsonibacter asaccharolyticus*, and saturated fat/bile pressure for *Bilophila wadsworthia*.
+
+For explanation, the same saturated feature terms are decomposed across the foods that supplied them. The food-level contributions sum exactly to each species' direct log-pressure. The interface shows the largest direction-aligned contributor, explicitly before competition and compositional normalization. This is an attribution of model inputs—not a measured causal effect of that food in a person.
 
 For exposure $e$, a normalized target is calculated in log space and approached with inertia:
 

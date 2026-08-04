@@ -334,12 +334,59 @@
     return result;
   }
 
+  // Decompose each species' direct log-pressure into food-level contributions.
+  // The decomposition uses the same saturated feature totals and plant-breadth
+  // term as pressureForSpecies, so food contributions sum back to that pressure.
+  // It describes model inputs before competition and compositional normalization;
+  // it is not a causal or clinical effect estimate.
+  function attributeSpeciesPressure(diet) {
+    const foodRows = diet.foods || [];
+    const scale = diet.mode === "day" ? .72 : .46;
+    const bySpecies = Object.fromEntries(Object.keys(SPECIES).map(key => [key, {}]));
+    const add = (speciesKey, foodId, value) => {
+      bySpecies[speciesKey][foodId] = (bySpecies[speciesKey][foodId] || 0) + value;
+    };
+
+    for (const [feature, total] of Object.entries(diet.features || {})) {
+      if (!total) continue;
+      const guildAmount = 1.7 * Math.tanh(total / 1.7);
+      const speciesAmount = 1.45 * Math.tanh(total / 1.45);
+      for (const food of foodRows) {
+        const raw = (food.features[feature] || 0) * food.portions * scale;
+        if (!raw) continue;
+        const share = raw / total;
+        for (const [speciesKey, species] of Object.entries(SPECIES)) {
+          const guildCoefficient = (EFFECTS[feature] || {})[species.guild] || 0;
+          const speciesCoefficient = (SPECIES_MODIFIERS[speciesKey] || {})[feature] || 0;
+          add(speciesKey, food.id, share * (guildAmount * guildCoefficient * species.response + speciesAmount * speciesCoefficient));
+        }
+      }
+    }
+
+    const plantFoods = foodRows.filter(food => food.plant);
+    if (plantFoods.length) {
+      const breadth = Math.tanh(diet.plantCount / 14);
+      const breadthCoefficients = { butyrate: .10, saccharolytic: .08, generalists: .06, proteolytic: -.04 };
+      for (const [speciesKey, species] of Object.entries(SPECIES)) {
+        const contribution = breadth * (breadthCoefficients[species.guild] || 0) * species.response / plantFoods.length;
+        for (const food of plantFoods) add(speciesKey, food.id, contribution);
+      }
+    }
+
+    return Object.fromEntries(Object.entries(bySpecies).map(([speciesKey, foods]) => [speciesKey,
+      Object.entries(foods)
+        .map(([foodId, pressure]) => ({ foodId, pressure }))
+        .sort((a, b) => Math.abs(b.pressure) - Math.abs(a.pressure))
+    ]));
+  }
+
   function simulateExposure(selection = {}, baselineId = "typical", mode = "meal", repeats = 5, customDistribution = null) {
     const baseline = BASELINES[baselineId] || BASELINES.typical;
     const preset = speciesBaseline(baselineId);
     const start = customDistribution ? normalizeSpecies(customDistribution, preset) : preset;
     const diet = aggregateExposure(selection, mode);
     const pressure = pressureForSpecies(diet);
+    const attribution = attributeSpeciesPressure(diet);
     const steps = clamp(Math.round(Number(repeats) || 1), 1, 10);
     const dose = mode === "day" ? .48 : .31;
     const adaptation = mode === "day" ? .46 : .38;
@@ -371,7 +418,7 @@
       });
     }
 
-    return { baseline, baselineSpecies: start, diet, pressure, trajectory, repeats: steps, mode, uncertainty: baseline.uncertainty + 4.5 };
+    return { baseline, baselineSpecies: start, diet, pressure, attribution, trajectory, repeats: steps, mode, uncertainty: baseline.uncertainty + 4.5 };
   }
 
   function dominantPathway(diet) {
@@ -389,5 +436,5 @@
     return best;
   }
 
-  return { GUILDS, BASELINES, SPECIES, FOODS, EFFECTS, aggregateDiet, aggregateExposure, calculateMealScores, simulate, simulateExposure, dominantPathway, normalizeGuilds, normalizeSpecies, speciesBaseline, speciesToGuilds, calculateMetabolites };
+  return { GUILDS, BASELINES, SPECIES, FOODS, EFFECTS, aggregateDiet, aggregateExposure, calculateMealScores, simulate, simulateExposure, attributeSpeciesPressure, dominantPathway, normalizeGuilds, normalizeSpecies, speciesBaseline, speciesToGuilds, calculateMetabolites };
 });

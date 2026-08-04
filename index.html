@@ -7,7 +7,7 @@
     <meta name="theme-color" content="#122b26" />
     <title>MICROBIOME — feed the ecosystem</title>
     <link rel="icon" href="assets/favicon.svg" type="image/svg+xml" />
-    <link rel="stylesheet" href="styles.css" />
+    <link rel="stylesheet" href="styles.css?v=6" />
   </head>
   <body>
     <div class="grain" aria-hidden="true"></div>
@@ -31,7 +31,7 @@
     <main id="top">
       <section class="hero section-shell">
         <div class="hero-copy">
-          <p class="eyebrow">A living systems experiment · v0.5</p>
+          <p class="eyebrow">A living systems experiment · v0.6</p>
           <h1>Your gut is an <em>ecosystem</em>, not a score.</h1>
           <p class="hero-lede">
             Build one meal or one day. See the directional nudge across 20 gut species, then repeat
@@ -101,7 +101,10 @@
               <p class="story-map-help" id="story-map-help">Select any species to open its evidence profile.</p>
               <svg id="story-chart" viewBox="0 0 680 310" role="img" aria-label="Starting microbiome compared with one and ten repeated exposures"></svg>
               <p class="story-disclaimer" id="story-disclaimer"></p>
-              <button class="story-full-button" id="story-full-button" type="button">Open this in the full lab</button>
+              <div class="story-result-actions">
+                <button class="story-share-button" id="story-share-button" type="button">Share my microbiome story</button>
+                <button class="story-full-button" id="story-full-button" type="button">Open this in the full lab</button>
+              </div>
             </section>
           </div>
         </div>
@@ -120,12 +123,18 @@
             </p>
           </div>
 
+          <details class="advanced-lab" id="advanced-lab-details">
+            <summary>
+              <span><strong id="advanced-lab-summary-title">Open advanced exploration</strong><small id="advanced-lab-summary-copy">Build any meal, compare repeated exposure and inspect the evidence.</small></span>
+              <b aria-hidden="true">+</b>
+            </summary>
           <div class="model-grid">
             <aside class="control-panel">
               <div class="panel-heading">
                 <span class="step-number">1</span>
                 <div><small>Starting ecology</small><h3>Choose a baseline</h3></div>
               </div>
+              <p class="custom-baseline-note" id="custom-baseline-note" hidden>Using the baseline built from your weekly onboarding.</p>
               <div class="baseline-options" id="baseline-options" role="radiogroup" aria-label="Baseline ecology">
                 <button class="baseline-card active" data-baseline="typical" role="radio" aria-checked="true" type="button">
                   <span>Mixed diet</span><small>moderate fibre · stable</small>
@@ -217,14 +226,6 @@
                 <svg id="trajectory-chart" viewBox="0 0 720 280" role="img" aria-label="Modelled species abundance across repeated exposures"></svg>
               </div>
 
-              <div class="chart-wrap species-chart-wrap">
-                <div class="chart-header">
-                  <div><small>All 20 species</small><strong>Starting distribution → selected exposure</strong></div>
-                  <div class="comparison-key"><span><i class="start-dot"></i>start</span><span><i class="end-dot"></i>modelled</span></div>
-                </div>
-                <svg id="species-chart" viewBox="0 0 720 620" role="img" aria-label="Comparison of starting and modelled distribution for 20 gut species"></svg>
-              </div>
-
               <div class="species-insights" id="species-insights"></div>
 
               <div class="uncertainty-note">
@@ -241,6 +242,7 @@
             </div>
             <div class="selected-list" id="selected-list"></div>
           </div>
+          </details>
         </div>
       </section>
 
@@ -359,8 +361,24 @@
       <a class="primary-button" href="https://github.com/micmer-git/microbiome-lab/blob/main/MODEL.md" target="_blank" rel="noreferrer">Read the model specification <span>↗</span></a>
     </dialog>
 
-    <script src="model.js"></script>
-    <script src="content.js"></script>
-    <script src="app.js"></script>
+    <dialog id="share-dialog" class="share-dialog">
+      <button class="dialog-close" id="share-dialog-close" type="button" aria-label="Close">×</button>
+      <p class="eyebrow" id="share-dialog-kicker">Story-ready result</p>
+      <h2 id="share-dialog-title">Your ecosystem, ready to share.</h2>
+      <p id="share-dialog-intro">A 1080 × 1920 illustration of all 20 modelled species. Share it to Instagram Stories or save it to your phone.</p>
+      <div class="share-preview-wrap">
+        <canvas id="share-story-canvas" width="1080" height="1920" role="img" aria-label="Shareable portrait illustration of the modelled microbiome"></canvas>
+      </div>
+      <div class="share-dialog-actions">
+        <button class="primary-button" id="share-native-button" type="button">Share image</button>
+        <button class="ghost-button" id="share-download-button" type="button">Download PNG</button>
+      </div>
+      <p class="share-status" id="share-status" aria-live="polite"></p>
+    </dialog>
+
+    <script src="model.js?v=6"></script>
+    <script src="content.js?v=6"></script>
+    <script src="app.js?v=6"></script>
+    <script src="share-card.js?v=6"></script>
   </body>
 </html>

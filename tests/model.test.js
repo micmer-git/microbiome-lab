@@ -131,6 +131,10 @@ test("every modeled species has an evidence profile and source", () => {
   for (const info of Object.values(content.SPECIES_INFO)) {
     assert.ok(content.SPECIES_BASES[info.base]);
     assert.match(info.source, /^https:\/\//);
+    assert.ok(info.extra && info.extra.length >= 1, "each species needs a specific evidence signal");
+    for (const signal of info.extra) {
+      assert.ok(signal.en && signal.it && signal.domain && signal.level);
+    }
   }
 });
 
@@ -176,4 +180,27 @@ test("coffee, kombucha and alcohol scenarios stay bounded through ten exposures"
       assert.ok(Number.isFinite(point.capacity));
     }
   }
+});
+
+test("food attribution exactly reconstructs every species pressure", () => {
+  const result = model.simulateExposure({ oats: 1.5, coffee: 1, kimchi: .5, cheese: .75 }, "typical", "meal", 5);
+  for (const key of Object.keys(model.SPECIES)) {
+    const reconstructed = result.attribution[key].reduce((total, row) => total + row.pressure, 0);
+    assert.ok(Math.abs(reconstructed - result.pressure[key]) < 1e-12, `${key} attribution should sum to its pressure`);
+  }
+});
+
+test("attribution identifies the strongest direct food driver for specific rules", () => {
+  const coffee = model.simulateExposure({ coffee: 1, oats: 1 }, "typical", "meal", 1);
+  assert.equal(coffee.attribution.lawsonibacter[0].foodId, "coffee");
+  assert.ok(coffee.attribution.lawsonibacter[0].pressure > 0);
+
+  const bile = model.simulateExposure({ berries: 1, cheese: 1 }, "typical", "meal", 1);
+  assert.equal(bile.attribution.bilophila[0].foodId, "cheese");
+  assert.ok(bile.attribution.bilophila[0].pressure > 0);
+});
+
+test("empty exposures return empty attribution without inventing a driver", () => {
+  const result = model.simulateExposure({}, "typical", "meal", 1);
+  for (const key of Object.keys(model.SPECIES)) assert.deepEqual(result.attribution[key], []);
 });

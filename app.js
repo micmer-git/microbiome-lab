@@ -53,7 +53,7 @@
     [".site-header nav a:nth-child(2)", "Model", "Modello"],
     [".site-header nav a:nth-child(3)", "Biology", "Biologia"],
     [".site-header nav a:nth-child(4)", "Evidence", "Evidenze"],
-    [".hero-copy .eyebrow", "A living systems experiment · v0.5", "Un esperimento sui sistemi viventi · v0.5"],
+    [".hero-copy .eyebrow", "A living systems experiment · v0.6", "Un esperimento sui sistemi viventi · v0.6"],
     [".hero-copy h1", "Your gut is an <em>ecosystem</em>, not a score.", "Il tuo intestino è un <em>ecosistema</em>, non un voto.", true],
     [".hero-lede", "Build one meal or one day. See the directional nudge across 20 gut species, then repeat the same exposure to explore how baseline-dependent ecological pressure may accumulate.", "Costruisci un pasto o una giornata. Osserva la spinta direzionale su 20 specie intestinali e ripeti l'esposizione per esplorare come la pressione ecologica dipenda dal punto di partenza."],
     [".hero-actions .primary-button", "Describe your usual week <span>↓</span>", "Descrivi la tua settimana abituale <span>↓</span>", true],
@@ -68,6 +68,8 @@
     [".model-section > .section-shell > .section-heading .eyebrow", "01 · Exposure → ecology", "01 · Esposizione → ecologia"],
     [".model-section > .section-shell > .section-heading h2", "Build once.<br>Repeat it.", "Componi una volta.<br>Ripeti.", true],
     [".model-section > .section-shell > .section-heading > p", "Compose one meal or one day, choose a starting species distribution, and repeat the exposure up to ten times. This models directional pressure—not measured abundance.", "Componi un pasto o una giornata, scegli la distribuzione iniziale e ripeti fino a dieci volte. Il modello mostra una pressione direzionale, non un'abbondanza misurata."],
+    ["#advanced-lab-summary-title", "Open advanced exploration", "Apri l'esplorazione avanzata"],
+    ["#advanced-lab-summary-copy", "Build any meal, compare repeated exposure and inspect the evidence.", "Componi qualsiasi pasto, confronta le esposizioni ripetute e consulta le evidenze."],
     [".control-panel > .panel-heading:first-child small", "Starting ecology", "Ecologia iniziale"],
     [".control-panel > .panel-heading:first-child h3", "Choose a baseline", "Scegli un profilo iniziale"],
     ["[data-baseline='typical'] span", "Mixed diet", "Dieta mista"],
@@ -91,12 +93,8 @@
     [".simulation-toolbar .eyebrow", "Modelled state", "Stato modellato"],
     ["#community-kicker", "Interactive ecosystem", "Ecosistema interattivo"],
     [".score-block > div:last-child small", "Functional capacity heuristic", "Euristica di capacità funzionale"],
-    [".chart-wrap:not(.species-chart-wrap) .chart-header small", "Repeated exposure trajectory", "Traiettoria dell'esposizione ripetuta"],
+    [".chart-wrap .chart-header small", "Repeated exposure trajectory", "Traiettoria dell'esposizione ripetuta"],
     ["#chart-title", "Largest species responders", "Specie con risposta maggiore"],
-    [".species-chart-wrap .chart-header small", "All 20 species", "Tutte le 20 specie"],
-    [".species-chart-wrap .chart-header strong", "Starting distribution → selected exposure", "Distribuzione iniziale → esposizione selezionata"],
-    [".comparison-key span:nth-child(1)", "start", "inizio"],
-    [".comparison-key span:nth-child(2)", "modelled", "modellato"],
     [".uncertainty-note p", "<strong>Pressure, not a stool-test forecast.</strong> A meal may alter substrates and activity before relative abundance moves. The species shifts are normalized scenario estimates; person-specific variation can exceed the displayed effect.", "<strong>Pressione, non previsione di un test fecale.</strong> Un pasto può cambiare substrati e attività prima dell'abbondanza relativa. Le variazioni sono stime normalizzate di scenario; la variabilità personale può superare l'effetto mostrato.", true],
     [".selected-heading .eyebrow", "Your selected exposure", "La tua esposizione"],
     ["#clear-foods", "Clear all", "Svuota tutto"],
@@ -200,8 +198,9 @@
       const column = index % columns, row = Math.floor(index / columns);
       const x = cellWidth * (column + .5), y = 42 + cellHeight * row;
       const delta = 100 * (ten[key] - start[key]);
-      return `<g class="story-species-node" data-species-node="${key}" role="button" tabindex="0" aria-label="${SPECIES[key].name}, ${delta >= 0 ? "+" : ""}${delta.toFixed(2)} percentage points after ten exposures">
-        <title>${SPECIES[key].name}: ${(100 * start[key]).toFixed(2)}% → ${(100 * once[key]).toFixed(2)}% → ${(100 * ten[key]).toFixed(2)}%</title>
+      const driver = driverCopy(exposureRun, key, delta, true);
+      return `<g class="story-species-node" data-species-node="${key}" role="button" tabindex="0" aria-label="${SPECIES[key].name}, ${delta >= 0 ? "+" : ""}${delta.toFixed(2)} percentage points after ten exposures; ${driver}">
+        <title>${SPECIES[key].name}: ${(100 * start[key]).toFixed(2)}% → ${(100 * once[key]).toFixed(2)}% → ${(100 * ten[key]).toFixed(2)}%. ${driver}</title>
         <circle class="ten-ring ${delta >= 0 ? "up" : "down"}" cx="${x}" cy="${y}" r="${radius(ten[key]).toFixed(1)}"/>
         <circle class="once-ring" cx="${x}" cy="${y}" r="${radius(once[key]).toFixed(1)}"/>
         <circle class="start-dot" cx="${x}" cy="${y}" r="${radius(start[key]).toFixed(1)}" fill="${SPECIES[key].color}"/>
@@ -319,6 +318,27 @@
     $("#support-score-bar").style.width = `${scores.support}%`;
   }
 
+  function speciesDriver(result, key, delta = 0) {
+    const rows = (result.attribution && result.attribution[key]) || [];
+    if (!rows.length) return null;
+    const direction = Math.sign(delta);
+    const aligned = direction ? rows.filter(row => Math.sign(row.pressure) === direction) : rows;
+    const row = (aligned.length ? aligned : rows)[0];
+    const food = FOODS.find(item => item.id === row.foodId);
+    return food ? { ...row, food } : null;
+  }
+
+  function driverCopy(result, key, delta, compact = false) {
+    const driver = speciesDriver(result, key, delta);
+    if (!driver) return state.language === "it" ? "Nessun alimento attribuibile" : "No attributable food";
+    const sign = driver.pressure >= 0 ? "+" : "";
+    const name = foodName(driver.food);
+    if (compact) return `${name} (${sign}${driver.pressure.toFixed(2)})`;
+    return state.language === "it"
+      ? `Driver diretto principale nel modello: ${name} (${sign}${driver.pressure.toFixed(2)} pressione log). Prima di competizione e normalizzazione.`
+      : `Largest direct modeled driver: ${name} (${sign}${driver.pressure.toFixed(2)} log-pressure). Before competition and normalization.`;
+  }
+
   function renderCommunity(point) {
     const svg = $("#community-chart");
     const start = state.result.trajectory[0].species;
@@ -333,8 +353,9 @@
       const radius = 8 + 16 * Math.sqrt(value / maxValue);
       const direction = delta > .00005 ? "up" : delta < -.00005 ? "down" : "flat";
       const labelY = radius + 16;
-      return `<g class="community-node ${direction}" data-species-node="${key}" role="button" tabindex="0" transform="translate(${x.toFixed(1)} ${y.toFixed(1)})" aria-label="${SPECIES[key].name}, ${(100 * value).toFixed(2)} percent">
-        <title>${SPECIES[key].name}: ${(100 * value).toFixed(2)}%, ${delta >= 0 ? "+" : ""}${(100 * delta).toFixed(2)} percentage points</title>
+      const driver = driverCopy(state.result, key, delta, true);
+      return `<g class="community-node ${direction}" data-species-node="${key}" role="button" tabindex="0" transform="translate(${x.toFixed(1)} ${y.toFixed(1)})" aria-label="${SPECIES[key].name}, ${(100 * value).toFixed(2)} percent; ${driver}">
+        <title>${SPECIES[key].name}: ${(100 * value).toFixed(2)}%, ${delta >= 0 ? "+" : ""}${(100 * delta).toFixed(2)} percentage points. ${driver}</title>
         <circle class="node-halo" r="${radius + 7}" stroke="${direction === "down" ? "#ff8c72" : SPECIES[key].color}" style="--pulse-delay:${(index * .11).toFixed(2)}s"/>
         <circle class="node-core" r="${radius}" fill="${SPECIES[key].color}"/>
         <circle class="node-glint" cx="${(-radius * .27).toFixed(1)}" cy="${(-radius * .28).toFixed(1)}" r="${Math.max(2, radius * .17).toFixed(1)}"/>
@@ -354,6 +375,7 @@
     const species = SPECIES[key], info = SPECIES_INFO[key], base = SPECIES_BASES[info.base];
     const point = contextResult.trajectory[Math.min(contextExposure, contextResult.repeats)], start = contextResult.trajectory[0];
     const delta = 100 * (point.species[key] - start.species[key]);
+    const driver = driverCopy(contextResult, key, delta);
     const signals = [...base.signals, ...(info.extra || [])];
     const presentDomains = new Set(signals.map(signal => signal.domain));
     ["digestion", "metabolic", "immune", "neuro"].forEach(domain => {
@@ -363,6 +385,7 @@
     $("#species-dialog-content").innerHTML = `<p class="eyebrow">${t("selectSpecies")}</p>
       <div class="species-dialog-heading"><i style="background:${species.color}"></i><div><h2><em>${species.name}</em></h2><p>${base.role[state.language]}</p></div></div>
       <div class="species-dialog-stats"><div><small>${t("abundance")}</small><strong>${(100 * point.species[key]).toFixed(2)}%</strong></div><div><small>${t("change")}</small><strong class="${delta > 0 ? "positive" : delta < 0 ? "negative" : ""}">${delta >= 0 ? "+" : ""}${delta.toFixed(2)} pp</strong></div></div>
+      <div class="species-facts"><div><small>${state.language === "it" ? "Alimento che contribuisce di più" : "Largest food contributor"}</small><p>${driver}</p></div></div>
       <div class="species-facts"><div><small>${t("affinity")}</small><p>${info.affinity[state.language]}</p></div><div><small>${t("products")}</small><p>${base.products.join(" · ")}</p></div></div>
       <h3>${t("evidence")}</h3><div class="effect-list">${signals.map(signal => `<article><header><span>${domainNames[signal.domain]}</span><b class="evidence-${signal.level}">${evidenceLabel(signal.level)}</b></header><p>${signal[state.language]}</p></article>`).join("")}</div>
       <div class="neuro-caution"><strong>${t("neuro")}</strong><p>${t("neuroCaution")}</p></div>
@@ -405,38 +428,12 @@
     $("#chart-legend").innerHTML = keys.map(key => `<span><i style="background:${SPECIES[key].color}"></i><em>${SPECIES[key].short}</em></span>`).join("");
   }
 
-  function renderSpeciesChart(point) {
-    const svg = $("#species-chart");
-    const start = state.result.trajectory[0].species;
-    const order = Object.keys(SPECIES).sort((a, b) => start[b] - start[a]);
-    const width = 720, height = 620, pad = { l: 178, r: 74, t: 25, b: 34 };
-    const maxValue = Math.max(.05, Math.ceil(Math.max(...Object.values(start), ...Object.values(point.species)) * 20) / 20);
-    const plotWidth = width - pad.l - pad.r;
-    const rowHeight = (height - pad.t - pad.b) / order.length;
-    const x = value => pad.l + (value / maxValue) * plotWidth;
-    const ticks = [0, maxValue / 2, maxValue];
-    const grid = ticks.map(tick => `<line x1="${x(tick)}" y1="${pad.t - 8}" x2="${x(tick)}" y2="${height - pad.b}" stroke="rgba(244,239,229,.09)"/><text x="${x(tick)}" y="${height - 8}" text-anchor="middle">${(tick * 100).toFixed(tick ? 1 : 0)}%</text>`).join("");
-    const rows = order.map((key, index) => {
-      const y = pad.t + rowHeight * (index + .5);
-      const before = start[key], after = point.species[key], delta = 100 * (after - before);
-      const deltaText = Math.abs(delta) < .005 ? "—" : `${delta > 0 ? "+" : ""}${delta.toFixed(2)} pp`;
-      return `<g class="species-chart-row" data-species-node="${key}" role="button" tabindex="0" aria-label="${SPECIES[key].name}"><title>${SPECIES[key].name}: ${(100 * before).toFixed(2)}% to ${(100 * after).toFixed(2)}%, ${deltaText}</title>
-        <text class="species-label" x="${pad.l - 10}" y="${y + 3}" text-anchor="end">${SPECIES[key].short}</text>
-        <line x1="${x(before)}" y1="${y}" x2="${x(after)}" y2="${y}" stroke="${SPECIES[key].color}" stroke-width="2"/>
-        <circle cx="${x(before)}" cy="${y}" r="4" fill="var(--deep)" stroke="rgba(244,239,229,.72)" stroke-width="1.5"/>
-        <circle cx="${x(after)}" cy="${y}" r="5" fill="${SPECIES[key].color}"/>
-        <text class="species-delta ${delta > .005 ? "up" : delta < -.005 ? "down" : ""}" x="${width - 4}" y="${y + 3}" text-anchor="end">${deltaText}</text>
-      </g>`;
-    }).join("");
-    svg.innerHTML = `<title>Starting and modelled relative abundance for 20 species</title>${grid}${rows}`;
-  }
-
   function renderInsights(point) {
     const start = state.result.trajectory[0].species;
     const changes = Object.keys(SPECIES).map(key => ({ key, delta: 100 * (point.species[key] - start[key]), pressure: state.result.pressure[key] })).sort((a, b) => b.delta - a.delta);
     const gain = changes[0], loss = changes[changes.length - 1];
     const pressure = [...changes].sort((a, b) => Math.abs(b.pressure) - Math.abs(a.pressure))[0];
-    const card = (label, item, value, note) => `<article><small>${label}</small><strong><em>${SPECIES[item.key].short}</em></strong><span>${value}</span><p>${note}</p></article>`;
+    const card = (label, item, value, note) => `<article><small>${label}</small><strong><em>${SPECIES[item.key].short}</em></strong><span>${value}</span><p>${note}<br><b>${driverCopy(state.result, item.key, item.delta)}</b></p></article>`;
     if (!state.result.diet.totalPortions || state.exposure === 0) {
       $("#species-insights").innerHTML = state.language === "it" ? `<article class="insight-empty"><small>Livello insight</small><strong>Aggiungi alimenti o supera l'esposizione 0</strong><p>Qui appariranno i responder modellati più forti e la loro direzione.</p></article>` : `<article class="insight-empty"><small>Insight layer</small><strong>Add foods or move beyond exposure 0</strong><p>The strongest modeled responders and their direction will appear here.</p></article>`;
       return;
@@ -508,7 +505,6 @@
     renderMealScores();
     renderCommunity(point);
     renderTrajectoryChart();
-    renderSpeciesChart(point);
     renderInsights(point);
     renderSelectedDiet();
     renderPathway();
@@ -566,14 +562,17 @@
   }
 
   function syncChoiceButtons() {
-    $$("[data-baseline]").forEach(item => { const active = item.dataset.baseline === state.baseline; item.classList.toggle("active", active); item.setAttribute("aria-checked", active); });
+    const customNote = $("#custom-baseline-note");
+    customNote.hidden = !state.customDistribution;
+    customNote.textContent = state.language === "it" ? "Stai usando la baseline costruita dal tuo onboarding settimanale." : "Using the baseline built from your weekly onboarding.";
+    $$("[data-baseline]").forEach(item => { const active = !state.customDistribution && item.dataset.baseline === state.baseline; item.classList.toggle("active", active); item.setAttribute("aria-checked", active); });
     $$("[data-mode]").forEach(item => { const active = item.dataset.mode === state.mode; item.classList.toggle("active", active); item.setAttribute("aria-checked", active); });
   }
 
   function bindEvents() {
     $("#language-button").addEventListener("click", () => {
       state.language = state.language === "en" ? "it" : "en";
-      applyStaticCopy(); renderFilters(); renderFoodLibrary(); renderEvidence(); renderMealLibrary(); renderStory(); renderSimulation();
+      applyStaticCopy(); syncChoiceButtons(); renderFilters(); renderFoodLibrary(); renderEvidence(); renderMealLibrary(); renderStory(); renderSimulation();
       if (state.selectedSpecies && $("#species-dialog").open) openSpeciesDialog(state.selectedSpecies);
     });
     $("#frequency-foods").addEventListener("click", event => {
@@ -598,6 +597,7 @@
       const { story, customDistribution } = storyScenario();
       Object.assign(state, { selection: { ...story.selection }, baseline: "typical", mode: "meal", repeats: 10, exposure: 10, customDistribution });
       renderDistributionEditor(); syncChoiceButtons(); renderFoodLibrary(); renderSimulation();
+      $("#advanced-lab-details").open = true;
       $("#model").scrollIntoView({ behavior: "smooth" });
     });
     $("#meal-library-button").addEventListener("click", () => { renderMealLibrary(); $("#meal-dialog").showModal(); });
@@ -616,7 +616,6 @@
       else openSpeciesDialog(target.dataset.speciesNode);
     };
     $("#community-chart").addEventListener("click", activateSpecies); $("#community-chart").addEventListener("keydown", activateSpecies);
-    $("#species-chart").addEventListener("click", activateSpecies); $("#species-chart").addEventListener("keydown", activateSpecies);
     $("#story-chart").addEventListener("click", activateSpecies); $("#story-chart").addEventListener("keydown", activateSpecies);
     $("#food-filters").addEventListener("click", event => { const button = event.target.closest("[data-food-filter]"); if (!button) return; state.foodFilter = button.dataset.foodFilter; renderFilters(); renderFoodLibrary(); });
     $("#food-library").addEventListener("click", event => { const card = event.target.closest("[data-food]"); if (card) addFood(card.dataset.food, 1); });
@@ -630,7 +629,7 @@
     $("#distribution-reset").addEventListener("click", () => { state.customDistribution = null; renderDistributionEditor(); renderSimulation(); });
     $("#clear-foods").addEventListener("click", () => { state.selection = {}; renderFoodLibrary(); renderSimulation(); });
     $("#reset-button").addEventListener("click", () => { Object.assign(state, { selection: {}, baseline: "typical", mode: "meal", repeats: 5, exposure: 5, customDistribution: null }); renderDistributionEditor(); syncChoiceButtons(); renderFoodLibrary(); renderSimulation(); });
-    $("#load-demo").addEventListener("click", () => { Object.assign(state, { selection: { oats: 1, lentils: 1, berries: 1, "onion-garlic": 1 }, baseline: "typical", mode: "meal", repeats: 5, exposure: 5, customDistribution: null }); renderDistributionEditor(); syncChoiceButtons(); renderFoodLibrary(); renderSimulation(); $("#model").scrollIntoView({ behavior: "smooth" }); });
+    $("#load-demo").addEventListener("click", () => { Object.assign(state, { selection: { oats: 1, lentils: 1, berries: 1, "onion-garlic": 1 }, baseline: "typical", mode: "meal", repeats: 5, exposure: 5, customDistribution: null }); renderDistributionEditor(); syncChoiceButtons(); renderFoodLibrary(); renderSimulation(); $("#advanced-lab-details").open = true; $("#model").scrollIntoView({ behavior: "smooth" }); });
     $("#evidence-filters").addEventListener("click", event => { const button = event.target.closest("[data-evidence-filter]"); if (!button) return; state.evidenceFilter = button.dataset.evidenceFilter; renderFilters(); renderEvidence(); });
     const dialog = $("#about-dialog"), mealDialog = $("#meal-dialog"), speciesDialog = $("#species-dialog");
     $("#about-button").addEventListener("click", () => dialog.showModal()); $("#dialog-close").addEventListener("click", () => dialog.close()); dialog.addEventListener("click", event => { if (event.target === dialog) dialog.close(); });
