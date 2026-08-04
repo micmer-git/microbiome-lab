@@ -1,7 +1,7 @@
 (function () {
   "use strict";
 
-  const { FOODS, GUILDS, SPECIES, simulateExposure, speciesBaseline, dominantPathway, calculateMealScores } = window.MicrobiomeModel;
+  const { FOODS, GUILDS, SPECIES, simulateExposure, dominantPathway, calculateMealScores } = window.MicrobiomeModel;
   const { MEALS, FREQUENCY_GROUPS, DEFAULT_FREQUENCIES, QUICK_STORIES, STORY_UI, SPECIES_INFO, SPECIES_BASES, UI, FOOD_IT } = window.MicrobiomeContent;
   const $ = selector => document.querySelector(selector);
   const $$ = selector => [...document.querySelectorAll(selector)];
@@ -19,16 +19,40 @@
 
   const CATEGORY_LABELS = { all: "All", grains: "Grains", legumes: "Legumes", fruit: "Fruit", plants: "Plants", fermented: "Fermented", polyphenols: "Polyphenols", animal: "Animal", other: "Other" };
   const preferredLanguage = navigator.language && navigator.language.toLowerCase().startsWith("it") ? "it" : "en";
-  const state = { selection: {}, baseline: "typical", mode: "meal", repeats: 5, exposure: 5, customDistribution: null, foodFilter: "all", evidenceFilter: "all", mealFilter: "all", language: preferredLanguage, query: "", result: null, selectedSpecies: null, storyKind: "food", storyExposure: "coffee", frequencyPage: 0, foodFrequency: { ...DEFAULT_FREQUENCIES } };
+  const state = { selection: {}, mode: "meal", repeats: 5, exposure: 5, foodFilter: "all", evidenceFilter: "all", mealFilter: "all", language: preferredLanguage, query: "", result: null, selectedSpecies: null, storyKind: "food", storyExposure: "coffee", frequencyPage: 0, foodFrequency: { ...DEFAULT_FREQUENCIES } };
   const t = key => UI[state.language][key] || UI.en[key] || key;
   const foodName = food => state.language === "it" ? (FOOD_IT[food.id] || food.name) : food.name;
+  const FOOD_EMOJI = {
+    oats: "🥣", lentils: "🫘", chickpeas: "🫘", beans: "🫘", "cooled-potato": "🥔", "green-banana": "🍌", apple: "🍎", berries: "🫐", "onion-garlic": "🧅", artichoke: "🌿", broccoli: "🥦", wholegrain: "🍞", almonds: "🥜", cocoa: "🍫", coffee: "☕", kombucha: "🫗", alcohol: "🍷", "olive-oil": "🫒", kefir: "🥛", yogurt: "🥣", kimchi: "🥬", "red-meat": "🥩", "processed-meat": "🥓", cheese: "🧀", "upf-snack": "🍪", eggs: "🥚", chicken: "🍗", salmon: "🐟", "white-bread": "🍞", pasta: "🍝", "brown-rice": "🍚", "white-rice": "🍚", "leafy-greens": "🥬", tomato: "🍅", avocado: "🥑", carrots: "🥕", peas: "🫛", pear: "🍐", "ripe-banana": "🍌", walnuts: "🥜", milk: "🥛", butter: "🧈", "sugary-drink": "🥤", fries: "🍟", pizza: "🍕", burger: "🍔", "sweet-cereal": "🥣", pancakes: "🥞"
+  };
+  const foodEmoji = food => FOOD_EMOJI[food && food.id] || "🍽";
+
+  function modeledVariety(distribution, threshold = .02) {
+    return Object.values(distribution).filter(value => value >= threshold).length;
+  }
+
+  function ecologyProfile(distribution) {
+    const guilds = Object.fromEntries(Object.keys(GUILDS).map(key => [key, 0]));
+    Object.entries(distribution).forEach(([key, value]) => { guilds[SPECIES[key].guild] += value; });
+    if (guilds.bile + guilds.proteolytic >= .18) return state.language === "it"
+      ? { label: "Profilo tollerante a bile e proteine", copy: "Una quota maggiore del modello occupa nicchie associate a bile e substrati proteici; non significa microbioma cattivo." }
+      : { label: "Bile- and protein-tolerant profile", copy: "More of the model occupies bile- and protein-linked niches; this is not a bad-microbiome label." };
+    if (guilds.butyrate + guilds.bifido >= .43) return state.language === "it"
+      ? { label: "Profilo di cross-feeding fermentativo", copy: "Il modello è orientato a reti che condividono substrati e sostengono la produzione di SCFA." }
+      : { label: "Fermentative cross-feeding profile", copy: "The model leans toward networks that share substrates and support SCFA production." };
+    if (guilds.saccharolytic >= .27) return state.language === "it"
+      ? { label: "Profilo degradatore di carboidrati complessi", copy: "Nel modello hanno più peso le specie che aprono amidi, pectine e altri glicani alla comunità." }
+      : { label: "Complex-carbohydrate degrader profile", copy: "Species that open starches, pectins and other glycans to the community carry more weight in the model." };
+    return state.language === "it"
+      ? { label: "Profilo ecologico misto", copy: "Nessun gruppo funzionale domina nettamente questa distribuzione modellata." }
+      : { label: "Mixed ecological profile", copy: "No functional guild clearly dominates this modeled distribution." };
+  }
 
   function loadState() {
     try {
       const saved = JSON.parse(localStorage.getItem("microbiome-exposure-v2"));
       if (!saved) return;
       state.selection = Object.fromEntries(Object.entries(saved.selection || {}).map(([key, value]) => [key, Math.min(6, Number(value) || 0)]).filter(([, value]) => value > 0));
-      if (["typical", "plant", "lowFiber"].includes(saved.baseline)) state.baseline = saved.baseline;
       if (["meal", "day"].includes(saved.mode)) state.mode = saved.mode;
       if (["en", "it"].includes(saved.language)) state.language = saved.language;
       if (["food", "meal"].includes(saved.storyKind)) state.storyKind = saved.storyKind;
@@ -37,13 +61,12 @@
       if (saved.foodFrequency) state.foodFrequency = Object.fromEntries(Object.keys(DEFAULT_FREQUENCIES).map(id => [id, Math.max(0, Math.min(5, Number(saved.foodFrequency[id]) || 0))]));
       state.repeats = Math.max(1, Math.min(10, Number(saved.repeats) || 5));
       state.exposure = state.repeats;
-      if (saved.customDistribution) state.customDistribution = saved.customDistribution;
     } catch (_) { /* Local persistence is optional. */ }
   }
 
   function saveState() {
     try {
-      localStorage.setItem("microbiome-exposure-v2", JSON.stringify({ selection: state.selection, baseline: state.baseline, mode: state.mode, repeats: state.repeats, customDistribution: state.customDistribution, language: state.language, storyKind: state.storyKind, storyExposure: state.storyExposure, frequencyPage: state.frequencyPage, foodFrequency: state.foodFrequency }));
+      localStorage.setItem("microbiome-exposure-v2", JSON.stringify({ selection: state.selection, mode: state.mode, repeats: state.repeats, language: state.language, storyKind: state.storyKind, storyExposure: state.storyExposure, frequencyPage: state.frequencyPage, foodFrequency: state.foodFrequency }));
     } catch (_) { /* The model still works without browser storage. */ }
   }
 
@@ -53,7 +76,7 @@
     [".site-header nav a:nth-child(2)", "Model", "Modello"],
     [".site-header nav a:nth-child(3)", "Biology", "Biologia"],
     [".site-header nav a:nth-child(4)", "Evidence", "Evidenze"],
-    [".hero-copy .eyebrow", "A living systems experiment · v0.6", "Un esperimento sui sistemi viventi · v0.6"],
+    [".hero-copy .eyebrow", "A living systems experiment · v0.7", "Un esperimento sui sistemi viventi · v0.7"],
     [".hero-copy h1", "Your gut is an <em>ecosystem</em>, not a score.", "Il tuo intestino è un <em>ecosistema</em>, non un voto.", true],
     [".hero-lede", "Build one meal or one day. See the directional nudge across 20 gut species, then repeat the same exposure to explore how baseline-dependent ecological pressure may accumulate.", "Costruisci un pasto o una giornata. Osserva la spinta direzionale su 20 specie intestinali e ripeti l'esposizione per esplorare come la pressione ecologica dipenda dal punto di partenza."],
     [".hero-actions .primary-button", "Describe your usual week <span>↓</span>", "Descrivi la tua settimana abituale <span>↓</span>", true],
@@ -67,20 +90,14 @@
     [".orbit-note-c", "metabolites", "metaboliti"],
     [".model-section > .section-shell > .section-heading .eyebrow", "01 · Exposure → ecology", "01 · Esposizione → ecologia"],
     [".model-section > .section-shell > .section-heading h2", "Build once.<br>Repeat it.", "Componi una volta.<br>Ripeti.", true],
-    [".model-section > .section-shell > .section-heading > p", "Compose one meal or one day, choose a starting species distribution, and repeat the exposure up to ten times. This models directional pressure—not measured abundance.", "Componi un pasto o una giornata, scegli la distribuzione iniziale e ripeti fino a dieci volte. Il modello mostra una pressione direzionale, non un'abbondanza misurata."],
+    [".model-section > .section-shell > .section-heading > p", "Start from your weekly-food baseline, add one meal or more foods, then repeat the exposure up to ten times. This models directional pressure—not measured abundance.", "Parti dalla baseline dei tuoi alimenti settimanali, aggiungi un pasto o altri cibi e ripeti l'esposizione fino a dieci volte. Il modello mostra una pressione direzionale, non un'abbondanza misurata."],
     ["#advanced-lab-summary-title", "Open advanced exploration", "Apri l'esplorazione avanzata"],
     ["#advanced-lab-summary-copy", "Build any meal, compare repeated exposure and inspect the evidence.", "Componi qualsiasi pasto, confronta le esposizioni ripetute e consulta le evidenze."],
     [".control-panel > .panel-heading:first-child small", "Starting ecology", "Ecologia iniziale"],
-    [".control-panel > .panel-heading:first-child h3", "Choose a baseline", "Scegli un profilo iniziale"],
-    ["[data-baseline='typical'] span", "Mixed diet", "Dieta mista"],
-    ["[data-baseline='typical'] small", "moderate fibre · stable", "fibre moderate · stabile"],
-    ["[data-baseline='plant'] span", "Plant-diverse", "Ricca di piante"],
-    ["[data-baseline='plant'] small", "high fibre · resilient", "fibre elevate · resiliente"],
-    ["[data-baseline='lowFiber'] span", "Low-fibre", "Povera di fibre"],
-    ["[data-baseline='lowFiber'] small", "low substrate · bile-tolerant", "pochi substrati · bile-tollerante"],
-    [".distribution-editor summary", "Edit the 20-species starting distribution", "Modifica la distribuzione iniziale delle 20 specie"],
-    [".distribution-editor > p", "Enter relative parts. Values are normalized to 100% automatically.", "Inserisci parti relative: i valori vengono normalizzati automaticamente al 100%."],
-    ["#distribution-reset", "Use preset values", "Usa i valori predefiniti"],
+    [".control-panel > .panel-heading:first-child h3", "Your onboarding baseline", "La baseline del tuo onboarding"],
+    ["#onboarding-baseline-title", "Loaded from your weekly foods", "Caricata dai tuoi alimenti settimanali"],
+    ["#onboarding-baseline-copy", "The 35 frequencies condition the same 20-species starting ecology used above.", "Le 35 frequenze condizionano la stessa ecologia iniziale a 20 specie mostrata sopra."],
+    ["#edit-onboarding-link", "Edit weekly foods ↑", "Modifica gli alimenti settimanali ↑"],
     [".exposure-controls .panel-heading small", "Exposure unit", "Unità di esposizione"],
     [".exposure-controls .panel-heading h3", "Meal or full day?", "Pasto o giornata intera?"],
     ["[data-mode='meal'] strong", "One meal", "Un pasto"],
@@ -95,6 +112,11 @@
     [".score-block > div:last-child small", "Functional capacity heuristic", "Euristica di capacità funzionale"],
     [".chart-wrap .chart-header small", "Repeated exposure trajectory", "Traiettoria dell'esposizione ripetuta"],
     ["#chart-title", "Largest species responders", "Specie con risposta maggiore"],
+    ["#species-chart-kicker", "All 20 species", "Tutte le 20 specie"],
+    ["#species-chart-title", "Before → after, with the strongest food driver", "Prima → dopo, con l'alimento che contribuisce di più"],
+    ["#species-start-key", "start", "inizio"],
+    ["#species-end-key", "modelled", "modellato"],
+    ["#species-driver-key", "top driver", "driver principale"],
     [".uncertainty-note p", "<strong>Pressure, not a stool-test forecast.</strong> A meal may alter substrates and activity before relative abundance moves. The species shifts are normalized scenario estimates; person-specific variation can exceed the displayed effect.", "<strong>Pressione, non previsione di un test fecale.</strong> Un pasto può cambiare substrati e attività prima dell'abbondanza relativa. Le variazioni sono stime normalizzate di scenario; la variabilità personale può superare l'effetto mostrato.", true],
     [".selected-heading .eyebrow", "Your selected exposure", "La tua esposizione"],
     ["#clear-foods", "Clear all", "Svuota tutto"],
@@ -199,7 +221,9 @@
       const x = cellWidth * (column + .5), y = 42 + cellHeight * row;
       const delta = 100 * (ten[key] - start[key]);
       const driver = driverCopy(exposureRun, key, delta, true);
-      return `<g class="story-species-node" data-species-node="${key}" role="button" tabindex="0" aria-label="${SPECIES[key].name}, ${delta >= 0 ? "+" : ""}${delta.toFixed(2)} percentage points after ten exposures; ${driver}">
+      const driverItem = speciesDriver(exposureRun, key, delta);
+      const driverIcon = driverItem ? foodEmoji(driverItem.food) : "🍽";
+      return `<g class="story-species-node" data-species-node="${key}" data-guild="${SPECIES[key].guild}" data-start="${start[key]}" data-end="${ten[key]}" data-driver-icon="${driverIcon}" role="button" tabindex="0" aria-label="${SPECIES[key].name}, ${delta >= 0 ? "+" : ""}${delta.toFixed(2)} percentage points after ten exposures; ${driver}">
         <title>${SPECIES[key].name}: ${(100 * start[key]).toFixed(2)}% → ${(100 * once[key]).toFixed(2)}% → ${(100 * ten[key]).toFixed(2)}%. ${driver}</title>
         <circle class="ten-ring ${delta >= 0 ? "up" : "down"}" cx="${x}" cy="${y}" r="${radius(ten[key]).toFixed(1)}"/>
         <circle class="once-ring" cx="${x}" cy="${y}" r="${radius(once[key]).toFixed(1)}"/>
@@ -236,6 +260,10 @@
     requestAnimationFrame(() => { if (window.innerWidth <= 760) $("#story-options").scrollLeft = Math.max(0, visibleStories.findIndex(item => item.id === story.id)) * $("#story-options").clientWidth * .84; });
     $("#story-evidence").innerHTML = `${story.note[state.language]}${story.source ? ` <a href="${story.source}" target="_blank" rel="noreferrer">${copy.source} ↗</a>` : ""}`;
     renderStoryChart(exposureRun);
+    const baseline = exposureRun.trajectory[0].species;
+    const profile = ecologyProfile(baseline);
+    const topSpecies = Object.keys(SPECIES).sort((a, b) => baseline[b] - baseline[a]).slice(0, 3);
+    $("#onboarding-baseline-summary").innerHTML = `<span><small>${state.language === "it" ? "Profilo" : "Profile"}</small><strong>${profile.label}</strong></span><span><small>${state.language === "it" ? "Varietà modellata" : "Modelled variety"}</small><strong>${modeledVariety(baseline)}/20 ≥2%</strong></span><span><small>${state.language === "it" ? "Specie più rappresentate" : "Largest shares"}</small><strong>${topSpecies.map(key => SPECIES[key].short).join(" · ")}</strong></span>`;
     saveState();
   }
 
@@ -269,14 +297,6 @@
     $("#selected-list").innerHTML = foods.length ? foods.map(food => `<div class="selected-chip">
       <span>${food.icon} ${foodName(food)}</span><button type="button" data-decrease="${food.id}" aria-label="Remove one portion of ${foodName(food)}">−</button><strong>${food.portions}×</strong><button type="button" data-increase="${food.id}" aria-label="${t("addFood")} ${foodName(food)}">+</button>
     </div>`).join("") : `<div class="empty-diet">${state.language === "it" ? "Seleziona gli alimenti per comporre l'esposizione." : `Select foods above to compose ${unit}.`}</div>`;
-  }
-
-  function renderDistributionEditor() {
-    const distribution = state.customDistribution || speciesBaseline(state.baseline);
-    $("#distribution-editor").innerHTML = Object.entries(SPECIES).map(([key, species]) => `<label class="species-input">
-      <span><i style="background:${species.color}"></i><em>${species.short}</em></span>
-      <span><input type="number" min="0" max="100" step="0.1" value="${(100 * distribution[key]).toFixed(1)}" data-species-input="${key}" aria-label="Starting relative parts for ${species.name}"><small>%</small></span>
-    </label>`).join("");
   }
 
   function renderEvidence() {
@@ -428,6 +448,40 @@
     $("#chart-legend").innerHTML = keys.map(key => `<span><i style="background:${SPECIES[key].color}"></i><em>${SPECIES[key].short}</em></span>`).join("");
   }
 
+  function renderSpeciesChart(point) {
+    const svg = $("#species-chart");
+    const start = state.result.trajectory[0].species;
+    const order = Object.keys(SPECIES);
+    const width = 820, height = 660, pad = { l: 176, r: 236, t: 25, b: 34 };
+    const maxValue = Math.max(.05, Math.ceil(Math.max(...Object.values(start), ...Object.values(point.species)) * 20) / 20);
+    const plotWidth = width - pad.l - pad.r;
+    const rowHeight = (height - pad.t - pad.b) / order.length;
+    const x = value => pad.l + (value / maxValue) * plotWidth;
+    const ticks = [0, maxValue / 2, maxValue];
+    const grid = ticks.map(tick => `<line x1="${x(tick)}" y1="${pad.t - 8}" x2="${x(tick)}" y2="${height - pad.b}" class="species-grid"/><text x="${x(tick)}" y="${height - 8}" text-anchor="middle">${(tick * 100).toFixed(tick ? 1 : 0)}%</text>`).join("");
+    const rows = order.map((key, index) => {
+      const y = pad.t + rowHeight * (index + .5);
+      const before = start[key], after = point.species[key], delta = 100 * (after - before);
+      const deltaText = Math.abs(delta) < .005 ? "—" : `${delta > 0 ? "+" : ""}${delta.toFixed(2)} pp`;
+      const driver = speciesDriver(state.result, key, delta);
+      const driverName = driver ? foodName(driver.food) : (state.language === "it" ? "nessuno" : "none");
+      const shortDriver = driverName.length > 15 ? `${driverName.slice(0, 14)}…` : driverName;
+      const driverIcon = driver ? foodEmoji(driver.food) : "·";
+      const driverDetail = driverCopy(state.result, key, delta);
+      return `<g class="species-chart-row" data-species-node="${key}" role="button" tabindex="0" aria-label="${SPECIES[key].name}; ${deltaText}; ${driverDetail}"><title>${SPECIES[key].name}: ${(100 * before).toFixed(2)}% → ${(100 * after).toFixed(2)}%, ${deltaText}. ${driverDetail}</title>
+        <rect class="species-row-bg" x="0" y="${y - rowHeight / 2}" width="${width}" height="${rowHeight}"/>
+        <text class="species-label" x="${pad.l - 10}" y="${y + 4}" text-anchor="end">${SPECIES[key].short}</text>
+        <line class="species-change-line" x1="${x(before)}" y1="${y}" x2="${x(after)}" y2="${y}" stroke="${SPECIES[key].color}"/>
+        <circle class="species-before" cx="${x(before)}" cy="${y}" r="4"/>
+        <circle class="species-after" cx="${x(after)}" cy="${y}" r="5" fill="${SPECIES[key].color}"/>
+        <text class="species-driver-icon" x="${width - pad.r + 15}" y="${y + 5}">${driverIcon}</text>
+        <text class="species-driver-name" x="${width - pad.r + 43}" y="${y + 4}">${shortDriver}</text>
+        <text class="species-delta ${delta > .005 ? "up" : delta < -.005 ? "down" : ""}" x="${width - 5}" y="${y + 4}" text-anchor="end">${deltaText}</text>
+      </g>`;
+    }).join("");
+    svg.innerHTML = `<title>${state.language === "it" ? "Confronto orizzontale prima e dopo per 20 specie, con alimento driver principale" : "Horizontal before-and-after comparison for 20 species with the strongest food driver"}</title>${grid}${rows}`;
+  }
+
   function renderInsights(point) {
     const start = state.result.trajectory[0].species;
     const changes = Object.keys(SPECIES).map(key => ({ key, delta: 100 * (point.species[key] - start[key]), pressure: state.result.pressure[key] })).sort((a, b) => b.delta - a.delta);
@@ -478,7 +532,7 @@
   }
 
   function renderSimulation() {
-    state.result = simulateExposure(state.selection, state.baseline, state.mode, state.repeats, state.customDistribution);
+    state.result = simulateExposure(state.selection, "typical", state.mode, state.repeats, storyScenario().customDistribution);
     state.exposure = Math.max(0, Math.min(state.repeats, state.exposure));
     const point = state.result.trajectory[state.exposure];
     const baselinePoint = state.result.trajectory[0];
@@ -505,6 +559,7 @@
     renderMealScores();
     renderCommunity(point);
     renderTrajectoryChart();
+    renderSpeciesChart(point);
     renderInsights(point);
     renderSelectedDiet();
     renderPathway();
@@ -562,10 +617,6 @@
   }
 
   function syncChoiceButtons() {
-    const customNote = $("#custom-baseline-note");
-    customNote.hidden = !state.customDistribution;
-    customNote.textContent = state.language === "it" ? "Stai usando la baseline costruita dal tuo onboarding settimanale." : "Using the baseline built from your weekly onboarding.";
-    $$("[data-baseline]").forEach(item => { const active = !state.customDistribution && item.dataset.baseline === state.baseline; item.classList.toggle("active", active); item.setAttribute("aria-checked", active); });
     $$("[data-mode]").forEach(item => { const active = item.dataset.mode === state.mode; item.classList.toggle("active", active); item.setAttribute("aria-checked", active); });
   }
 
@@ -578,7 +629,7 @@
     $("#frequency-foods").addEventListener("click", event => {
       const button = event.target.closest("[data-frequency-food]"); if (!button) return;
       state.foodFrequency[button.dataset.frequencyFood] = Number(button.dataset.frequencyValue);
-      renderStory();
+      renderStory(); renderSimulation();
     });
     $("#frequency-prev").addEventListener("click", () => { state.frequencyPage = Math.max(0, state.frequencyPage - 1); renderStory(); });
     $("#frequency-next").addEventListener("click", () => { state.frequencyPage = Math.min(FREQUENCY_GROUPS.length - 1, state.frequencyPage + 1); renderStory(); });
@@ -594,9 +645,9 @@
       renderStory();
     });
     $("#story-full-button").addEventListener("click", () => {
-      const { story, customDistribution } = storyScenario();
-      Object.assign(state, { selection: { ...story.selection }, baseline: "typical", mode: "meal", repeats: 10, exposure: 10, customDistribution });
-      renderDistributionEditor(); syncChoiceButtons(); renderFoodLibrary(); renderSimulation();
+      const { story } = storyScenario();
+      Object.assign(state, { selection: { ...story.selection }, mode: "meal", repeats: 10, exposure: 10 });
+      syncChoiceButtons(); renderFoodLibrary(); renderSimulation();
       $("#advanced-lab-details").open = true;
       $("#model").scrollIntoView({ behavior: "smooth" });
     });
@@ -616,20 +667,18 @@
       else openSpeciesDialog(target.dataset.speciesNode);
     };
     $("#community-chart").addEventListener("click", activateSpecies); $("#community-chart").addEventListener("keydown", activateSpecies);
+    $("#species-chart").addEventListener("click", activateSpecies); $("#species-chart").addEventListener("keydown", activateSpecies);
     $("#story-chart").addEventListener("click", activateSpecies); $("#story-chart").addEventListener("keydown", activateSpecies);
     $("#food-filters").addEventListener("click", event => { const button = event.target.closest("[data-food-filter]"); if (!button) return; state.foodFilter = button.dataset.foodFilter; renderFilters(); renderFoodLibrary(); });
     $("#food-library").addEventListener("click", event => { const card = event.target.closest("[data-food]"); if (card) addFood(card.dataset.food, 1); });
     $("#selected-list").addEventListener("click", event => { const increase = event.target.closest("[data-increase]"), decrease = event.target.closest("[data-decrease]"); if (increase) addFood(increase.dataset.increase, 1); if (decrease) addFood(decrease.dataset.decrease, -1); });
     $("#food-search").addEventListener("input", event => { state.query = event.target.value; renderFoodLibrary(); });
-    $("#baseline-options").addEventListener("click", event => { const button = event.target.closest("[data-baseline]"); if (!button) return; state.baseline = button.dataset.baseline; state.customDistribution = null; renderDistributionEditor(); syncChoiceButtons(); renderSimulation(); });
     $("#mode-options").addEventListener("click", event => { const button = event.target.closest("[data-mode]"); if (!button) return; state.mode = button.dataset.mode; syncChoiceButtons(); renderSimulation(); });
     $("#repeat-slider").addEventListener("input", event => { state.repeats = Number(event.target.value); state.exposure = state.repeats; renderSimulation(); });
     $("#exposure-slider").addEventListener("input", event => { state.exposure = Number(event.target.value); renderSimulation(); });
-    $("#distribution-editor").addEventListener("input", () => { state.customDistribution = Object.fromEntries($$("[data-species-input]").map(input => [input.dataset.speciesInput, Math.max(0, Number(input.value) || 0)])); renderSimulation(); });
-    $("#distribution-reset").addEventListener("click", () => { state.customDistribution = null; renderDistributionEditor(); renderSimulation(); });
     $("#clear-foods").addEventListener("click", () => { state.selection = {}; renderFoodLibrary(); renderSimulation(); });
-    $("#reset-button").addEventListener("click", () => { Object.assign(state, { selection: {}, baseline: "typical", mode: "meal", repeats: 5, exposure: 5, customDistribution: null }); renderDistributionEditor(); syncChoiceButtons(); renderFoodLibrary(); renderSimulation(); });
-    $("#load-demo").addEventListener("click", () => { Object.assign(state, { selection: { oats: 1, lentils: 1, berries: 1, "onion-garlic": 1 }, baseline: "typical", mode: "meal", repeats: 5, exposure: 5, customDistribution: null }); renderDistributionEditor(); syncChoiceButtons(); renderFoodLibrary(); renderSimulation(); $("#advanced-lab-details").open = true; $("#model").scrollIntoView({ behavior: "smooth" }); });
+    $("#reset-button").addEventListener("click", () => { Object.assign(state, { selection: {}, mode: "meal", repeats: 5, exposure: 5 }); syncChoiceButtons(); renderFoodLibrary(); renderSimulation(); });
+    $("#load-demo").addEventListener("click", () => { Object.assign(state, { selection: { oats: 1, lentils: 1, berries: 1, "onion-garlic": 1 }, mode: "meal", repeats: 5, exposure: 5 }); syncChoiceButtons(); renderFoodLibrary(); renderSimulation(); $("#advanced-lab-details").open = true; $("#model").scrollIntoView({ behavior: "smooth" }); });
     $("#evidence-filters").addEventListener("click", event => { const button = event.target.closest("[data-evidence-filter]"); if (!button) return; state.evidenceFilter = button.dataset.evidenceFilter; renderFilters(); renderEvidence(); });
     const dialog = $("#about-dialog"), mealDialog = $("#meal-dialog"), speciesDialog = $("#species-dialog");
     $("#about-button").addEventListener("click", () => dialog.showModal()); $("#dialog-close").addEventListener("click", () => dialog.close()); dialog.addEventListener("click", event => { if (event.target === dialog) dialog.close(); });
@@ -639,5 +688,5 @@
   }
 
   loadState();
-  applyStaticCopy(); renderFilters(); renderFoodLibrary(); renderEvidence(); renderDistributionEditor(); renderMealLibrary(); renderStory(); syncChoiceButtons(); initCanvas(); renderSimulation(); bindEvents();
+  applyStaticCopy(); renderFilters(); renderFoodLibrary(); renderEvidence(); renderMealLibrary(); renderStory(); syncChoiceButtons(); initCanvas(); renderSimulation(); bindEvents();
 })();

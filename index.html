@@ -7,7 +7,7 @@
     <meta name="theme-color" content="#122b26" />
     <title>MICROBIOME — feed the ecosystem</title>
     <link rel="icon" href="assets/favicon.svg" type="image/svg+xml" />
-    <link rel="stylesheet" href="styles.css?v=6" />
+    <link rel="stylesheet" href="styles.css?v=7" />
   </head>
   <body>
     <div class="grain" aria-hidden="true"></div>
@@ -31,7 +31,7 @@
     <main id="top">
       <section class="hero section-shell">
         <div class="hero-copy">
-          <p class="eyebrow">A living systems experiment · v0.6</p>
+          <p class="eyebrow">A living systems experiment · v0.7</p>
           <h1>Your gut is an <em>ecosystem</em>, not a score.</h1>
           <p class="hero-lede">
             Build one meal or one day. See the directional nudge across 20 gut species, then repeat
@@ -118,7 +118,7 @@
               <h2>Build once.<br />Repeat it.</h2>
             </div>
             <p>
-              Compose one meal or one day, choose a starting species distribution, and repeat the
+              Start from your weekly-food baseline, add one meal or more foods, then repeat the
               exposure up to ten times. This models directional pressure—not measured abundance.
             </p>
           </div>
@@ -132,27 +132,13 @@
             <aside class="control-panel">
               <div class="panel-heading">
                 <span class="step-number">1</span>
-                <div><small>Starting ecology</small><h3>Choose a baseline</h3></div>
+                <div><small>Starting ecology</small><h3>Your onboarding baseline</h3></div>
               </div>
-              <p class="custom-baseline-note" id="custom-baseline-note" hidden>Using the baseline built from your weekly onboarding.</p>
-              <div class="baseline-options" id="baseline-options" role="radiogroup" aria-label="Baseline ecology">
-                <button class="baseline-card active" data-baseline="typical" role="radio" aria-checked="true" type="button">
-                  <span>Mixed diet</span><small>moderate fibre · stable</small>
-                </button>
-                <button class="baseline-card" data-baseline="plant" role="radio" aria-checked="false" type="button">
-                  <span>Plant-diverse</span><small>high fibre · resilient</small>
-                </button>
-                <button class="baseline-card" data-baseline="lowFiber" role="radio" aria-checked="false" type="button">
-                  <span>Low-fibre</span><small>low substrate · bile-tolerant</small>
-                </button>
+              <div class="onboarding-baseline-card">
+                <div><span aria-hidden="true">35→20</span><p><strong id="onboarding-baseline-title">Loaded from your weekly foods</strong><small id="onboarding-baseline-copy">The 35 frequencies condition the same 20-species starting ecology used above.</small></p></div>
+                <div class="onboarding-baseline-summary" id="onboarding-baseline-summary"></div>
+                <a href="#story" id="edit-onboarding-link">Edit weekly foods ↑</a>
               </div>
-
-              <details class="distribution-editor">
-                <summary>Edit the 20-species starting distribution</summary>
-                <p>Enter relative parts. Values are normalized to 100% automatically.</p>
-                <div id="distribution-editor"></div>
-                <button class="ghost-button distribution-reset" id="distribution-reset" type="button">Use preset values</button>
-              </details>
 
               <div class="exposure-controls">
                 <div class="panel-heading compact-heading">
@@ -224,6 +210,14 @@
                   <div class="legend" id="chart-legend"></div>
                 </div>
                 <svg id="trajectory-chart" viewBox="0 0 720 280" role="img" aria-label="Modelled species abundance across repeated exposures"></svg>
+              </div>
+
+              <div class="chart-wrap species-chart-wrap">
+                <div class="chart-header">
+                  <div><small id="species-chart-kicker">All 20 species</small><strong id="species-chart-title">Before → after, with the strongest food driver</strong></div>
+                  <div class="comparison-key"><span><i class="start-dot"></i><b id="species-start-key">start</b></span><span><i class="end-dot"></i><b id="species-end-key">modelled</b></span><span>🍽 <b id="species-driver-key">top driver</b></span></div>
+                </div>
+                <svg id="species-chart" viewBox="0 0 820 660" role="img" aria-label="Horizontal before and after comparison for 20 gut species with strongest food contributor"></svg>
               </div>
 
               <div class="species-insights" id="species-insights"></div>
@@ -376,9 +370,9 @@
       <p class="share-status" id="share-status" aria-live="polite"></p>
     </dialog>
 
-    <script src="model.js?v=6"></script>
-    <script src="content.js?v=6"></script>
-    <script src="app.js?v=6"></script>
-    <script src="share-card.js?v=6"></script>
+    <script src="model.js?v=7"></script>
+    <script src="content.js?v=7"></script>
+    <script src="app.js?v=7"></script>
+    <script src="share-card.js?v=7"></script>
   </body>
 </html>

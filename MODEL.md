@@ -1,12 +1,12 @@
 # Model specification
 
-Version 0.6 · August 2026
+Version 0.7 · August 2026
 
 ## Purpose
 
 The model answers a narrow counterfactual question:
 
-> Given an editable 20-species starting distribution, which organisms receive more or less directional pressure from one meal or one day, and how could that pressure accumulate if the exposure is repeated?
+> Given the 20-species starting distribution constructed from the weekly-food onboarding, which organisms receive more or less directional pressure from one meal or one day, and how could that pressure accumulate if the exposure is repeated?
 
 It does **not** answer “what bacteria are in my stool?” A defensible answer to that question requires a biological sample and an explicit laboratory method, ideally repeated over time.
 
@@ -14,7 +14,7 @@ It does **not** answer “what bacteria are in my stool?” A defensible answer 
 
 The interactive view tracks 20 named gut species selected to span resistant-starch degradation, prebiotic response, butyrate production, mucin use, bile tolerance, proteolysis and ecological generalism. These are illustrative species proxies, not a complete community. Species and strains can perform multiple functions, and a species name does not imply a universal health effect.
 
-Three presets provide different normalized starting distributions. Every value can also be edited; input values are treated as relative parts and normalized to 100%. The starting state is therefore an assumption unless it comes from an appropriate species-resolved assay.
+The advanced lab now consistently inherits the normalized starting distribution constructed by the 35-food weekly-frequency onboarding. Visitors add foods or load a meal as a new exposure; generic diet presets and manual species editing are not presented as if they were measured baselines. The inherited starting state remains a model assumption unless it comes from an appropriate species-resolved assay.
 
 Foods are composed as either one meal or one full day. Each portion contributes substrate features. A meal uses a smaller dose scale than a day. Species pressure combines its primary functional-guild pressure with transparent species-specific modifiers—for example resistant starch for *Ruminococcus bromii*, inulin/GOS for bifidobacteria, coffee for *Lawsonibacter asaccharolyticus*, and saturated fat/bile pressure for *Bilophila wadsworthia*.
 
@@ -78,7 +78,9 @@ The mobile-first onboarding presents seven screens of five common foods. Each it
 
 The story view then compares the modeled start, one meal-sized exposure and 10 repeated meal-sized exposures. The coffee scenario encodes the replicated *Lawsonibacter* association already described in the species layer. Kombucha uses a mild fermented-food and tea-polyphenol feature mix because small human trials report modest and product-variable effects. The generic alcoholic-drink scenario encodes a small ethanol pressure; it does not model beverage-specific polyphenols, establish a safe dose or outweigh the health risks of alcohol.
 
-All 20 story and community nodes use a stable species order and fixed coordinates. Abundance changes alter dot or ring size and direction styling, not position. This makes within-scenario comparisons easier but does not imply physical proximity or ecological interaction between neighboring dots.
+All 20 story and community nodes use a stable species order and fixed coordinates. Abundance changes alter dot or ring size and direction styling, not position. The advanced lab also includes a fixed-row horizontal before/after chart; each row identifies the selected food with the largest direction-aligned contribution to direct modeled pressure. This makes comparisons easier but does not imply physical proximity, causal attribution in a person or ecological interaction between neighboring dots.
+
+The share image describes “modeled variety” as the number of the 20 displayed species whose normalized modeled share is at least 2%. This threshold is stated on the image. It is a readable scenario index, not measured richness, Shannon diversity or a clinical health score.
 
 ## Ecological update
 
@@ -111,7 +113,7 @@ These are not fecal or plasma concentrations. Absorption means fecal SCFA can be
 
 ## Personalization and uncertainty
 
-Three starting profiles are provided to make baseline dependence visible. The interface displays a deliberately broad uncertainty statement because baseline microbiome, transit time, medication, recent antibiotics, geography, age, illness, host genetics and food preparation are unobserved.
+The weekly-food-derived starting profile makes baseline dependence visible without pretending that three generic diet labels are measured microbiomes. The interface displays a deliberately broad uncertainty statement because actual baseline microbiome, transit time, medication, recent antibiotics, geography, age, illness, host genetics and food preparation are unobserved.
 
 Real personalization should use repeated measurements rather than a single sample. A future inference layer should distinguish:
 

@@ -87,7 +87,6 @@ a { color: inherit; }
 .advanced-lab[open] > summary b { transform: rotate(45deg); }
 .advanced-lab[open] > summary { border-bottom: 1px solid rgba(244,239,229,.15); }
 .advanced-lab .model-grid { border-width: 0 0 1px; }
-.custom-baseline-note { margin: 0 0 12px; padding: 11px 12px; border-left: 3px solid var(--aqua); background: rgba(103,223,210,.08); color: rgba(244,239,229,.78); font-size: 13px; line-height: 1.45; }
 .section-heading { display: grid; grid-template-columns: 1fr minmax(280px, 430px); gap: 80px; align-items: end; margin-bottom: 58px; }
 .section-heading h2 { font-size: clamp(48px, 5.5vw, 78px); }
 .section-heading > p { color: #667b73; line-height: 1.7; font-size: 14px; margin: 0; }
@@ -98,12 +97,14 @@ a { color: inherit; }
 .panel-heading h3, .simulation-toolbar h3 { font-size: 20px; margin: 1px 0 0; font-weight: 500; }
 .panel-heading small { color: rgba(244,239,229,.5); font: 9px "DM Mono"; text-transform: uppercase; }
 .step-number { width: 28px; height: 28px; display: grid; place-items: center; border: 1px solid rgba(244,239,229,.25); border-radius: 50%; font: 10px "DM Mono"; }
-.baseline-options { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
-.baseline-card { min-height: 76px; padding: 12px; border: 1px solid rgba(244,239,229,.13); background: transparent; color: var(--paper); text-align: left; cursor: pointer; transition: .2s; }
-.baseline-card span { font-size: 11px; font-weight: 600; display: block; }
-.baseline-card small { font-size: 8px; color: rgba(244,239,229,.48); line-height: 1.4; display: block; margin-top: 7px; }
-.baseline-card.active { background: var(--acid); color: var(--ink); border-color: var(--acid); }
-.baseline-card.active small { color: rgba(23,49,43,.65); }
+.onboarding-baseline-card { margin-bottom: 28px; border: 1px solid rgba(103,223,210,.32); background: rgba(103,223,210,.07); }
+.onboarding-baseline-card > div:first-child { display: grid; grid-template-columns: 56px 1fr; gap: 13px; align-items: center; padding: 15px; border-bottom: 1px solid rgba(103,223,210,.18); }
+.onboarding-baseline-card > div:first-child > span { width: 52px; height: 52px; display: grid; place-items: center; border: 1px solid var(--aqua); border-radius: 50%; color: var(--aqua); font: 10px "DM Mono"; }
+.onboarding-baseline-card p { margin: 0; }.onboarding-baseline-card p strong { display: block; font-size: 14px; }.onboarding-baseline-card p small { display: block; margin-top: 5px; color: rgba(244,239,229,.58); font-size: 11px; line-height: 1.45; }
+.onboarding-baseline-summary { display: grid; gap: 0; }
+.onboarding-baseline-summary span { display: grid; gap: 4px; padding: 11px 15px; border-bottom: 1px solid rgba(244,239,229,.09); }
+.onboarding-baseline-summary small { color: rgba(244,239,229,.48); font: 9px "DM Mono"; text-transform: uppercase; }.onboarding-baseline-summary strong { font-size: 12px; line-height: 1.35; }
+#edit-onboarding-link { display: block; padding: 12px 15px; color: var(--aqua); font: 11px "DM Mono"; text-decoration: none; }
 .food-heading { margin-top: 36px; }
 .plant-counter { margin-left: auto; font: 9px "DM Mono"; color: rgba(244,239,229,.55); }
 .plant-counter strong { color: var(--acid); font-size: 14px; }
@@ -147,6 +148,13 @@ a { color: inherit; }
 .legend span { display: flex; align-items: center; gap: 5px; }.legend i { width: 6px; height: 6px; border-radius: 50%; }
 #trajectory-chart { width: 100%; height: 250px; overflow: visible; }
 #trajectory-chart text { fill: rgba(244,239,229,.42); font: 8px "DM Mono"; }
+.species-chart-wrap { margin-top: 10px; overflow: hidden; }
+#species-chart { width: 100%; height: auto; min-height: 560px; overflow: visible; }
+#species-chart text { fill: rgba(244,239,229,.55); font: 9px "DM Mono"; }
+.species-chart-row { cursor: pointer; outline: none; }.species-chart-row .species-row-bg { fill: transparent; }.species-chart-row:nth-of-type(even) .species-row-bg { fill: rgba(244,239,229,.018); }.species-chart-row:hover .species-row-bg, .species-chart-row:focus .species-row-bg { fill: rgba(103,223,210,.07); }
+#species-chart .species-label { fill: rgba(244,239,229,.88); font-style: italic; }.species-chart-row:hover .species-label, .species-chart-row:focus .species-label { fill: var(--acid); }
+#species-chart .species-grid { stroke: rgba(244,239,229,.09); }.species-change-line { stroke-width: 2; }.species-before { fill: var(--deep); stroke: rgba(244,239,229,.76); stroke-width: 1.5; }.species-driver-icon { font: 16px sans-serif !important; }.species-driver-name { fill: rgba(244,239,229,.72) !important; }
+#species-chart .species-delta.up { fill: var(--acid); }#species-chart .species-delta.down { fill: var(--coral); }
 .guild-grid { display: grid; grid-template-columns: repeat(4, 1fr); margin-top: 10px; border-top: 1px solid rgba(244,239,229,.12); border-left: 1px solid rgba(244,239,229,.12); }
 .guild-card { min-height: 106px; padding: 13px; border-right: 1px solid rgba(244,239,229,.12); border-bottom: 1px solid rgba(244,239,229,.12); }
 .guild-card header { display: flex; justify-content: space-between; align-items: center; }
@@ -164,21 +172,9 @@ a { color: inherit; }
 .empty-diet { width: 100%; border: 1px dashed rgba(244,239,229,.17); color: rgba(244,239,229,.4); text-align: center; padding: 20px; font-size: 10px; }
 .selected-chip { display: grid; grid-template-columns: auto auto auto auto; align-items: center; gap: 8px; border: 1px solid rgba(244,239,229,.16); padding: 7px 9px; }
 .selected-chip span { font-size: 10px; }.selected-chip strong { font: 10px "DM Mono"; color: var(--acid); }.selected-chip button { width: 20px; height: 20px; padding: 0; border: 1px solid rgba(244,239,229,.18); background: transparent; color: var(--paper); cursor: pointer; }
-.distribution-editor { margin: 16px 0 30px; border: 1px solid rgba(244,239,229,.14); }
-.distribution-editor summary { padding: 12px 14px; cursor: pointer; font: 9px "DM Mono"; text-transform: uppercase; color: rgba(244,239,229,.72); }
-.distribution-editor > p { margin: 0; padding: 0 14px 10px; color: rgba(244,239,229,.42); font-size: 8px; line-height: 1.5; }
-#distribution-editor { display: grid; grid-template-columns: 1fr 1fr; max-height: 290px; overflow-y: auto; border-top: 1px solid rgba(244,239,229,.1); }
-.species-input { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 7px 9px; border-bottom: 1px solid rgba(244,239,229,.08); }
-.species-input:nth-child(odd) { border-right: 1px solid rgba(244,239,229,.08); }
-.species-input > span { display: flex; align-items: center; gap: 5px; min-width: 0; }
-.species-input i { width: 6px; height: 6px; border-radius: 50%; flex: 0 0 auto; }
-.species-input em { font-size: 8px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.species-input input { width: 45px; border: 0; border-bottom: 1px solid rgba(244,239,229,.22); background: transparent; color: var(--paper); text-align: right; font: 8px "DM Mono"; }
-.species-input small { color: rgba(244,239,229,.38); font: 7px "DM Mono"; }
-.distribution-reset { color: var(--paper); border-color: rgba(244,239,229,.18); margin: 10px 12px 12px; padding: 7px 10px; }
 .compact-heading { margin-bottom: 13px; }
 .mode-options { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; }
-.model-grid, .control-panel, .simulation-panel, .distribution-editor, .exposure-controls { min-width: 0; max-width: 100%; }
+.model-grid, .control-panel, .simulation-panel, .exposure-controls { min-width: 0; max-width: 100%; }
 .mode-button { min-height: 65px; padding: 11px; text-align: left; border: 1px solid rgba(244,239,229,.14); color: var(--paper); background: transparent; cursor: pointer; }
 .mode-button strong, .mode-button small { display: block; }.mode-button strong { font-size: 10px; }.mode-button small { margin-top: 5px; color: rgba(244,239,229,.45); font-size: 8px; }
 .mode-button.active { color: var(--ink); background: var(--acid); border-color: var(--acid); }.mode-button.active small { color: rgba(23,49,43,.62); }
@@ -316,10 +312,12 @@ dialog::backdrop { background: rgba(16,43,37,.55); backdrop-filter: blur(5px); }
 .story-share-button { min-height: 52px; padding: 11px 15px; border: 1px solid var(--aqua); background: var(--aqua); color: var(--ink); font-size: 14px; font-weight: 700; cursor: pointer; }
 .story-share-button:hover, .story-share-button:focus-visible { background: var(--paper); border-color: var(--paper); }
 .share-dialog { box-sizing: border-box; width: min(920px, calc(100% - 28px)); max-height: calc(100dvh - 28px); overflow-x: hidden; padding: 34px; background: var(--paper); color: var(--ink); border: 1px solid var(--ink); }
+.share-dialog .dialog-close { color: var(--ink); }
 .share-dialog::backdrop { background: rgba(10, 28, 24, .82); backdrop-filter: blur(5px); }
 .share-dialog h2 { margin: 4px 52px 12px 0; font-size: clamp(34px, 5vw, 60px); line-height: 1; letter-spacing: -.045em; font-weight: 500; }
 .share-dialog > p:not(.eyebrow):not(.share-status) { max-width: 680px; color: var(--muted); font-size: 16px; line-height: 1.55; }
-.share-preview-wrap { width: min(360px, 100%); margin: 24px auto; background: var(--deep); box-shadow: 0 22px 60px rgba(18, 43, 38, .22); }
+.share-preview-wrap { width: min(360px, 100%); margin: 24px auto; background: var(--deep); box-shadow: 0 22px 60px rgba(18, 43, 38, .22); animation: share-orbit-breathe 7s ease-in-out infinite; transform-origin: 50% 52%; }
+@keyframes share-orbit-breathe { 0%,100% { box-shadow: 0 22px 60px rgba(18,43,38,.22), 0 0 0 rgba(103,223,210,0); } 50% { box-shadow: 0 22px 65px rgba(18,43,38,.28), 0 0 34px rgba(103,223,210,.18); } }
 #share-story-canvas { display: block; width: 100%; height: auto; aspect-ratio: 9 / 16; }
 .share-dialog-actions { display: flex; justify-content: center; gap: 10px; flex-wrap: wrap; }
 .share-dialog-actions .primary-button, .share-dialog-actions .ghost-button { min-height: 50px; padding: 12px 20px; font-size: 14px; }
@@ -329,12 +327,11 @@ dialog::backdrop { background: rgba(16,43,37,.55); backdrop-filter: blur(5px); }
 .site-header nav { font-size: 14px; }.language-button { font-size: 11px; }.ghost-button, .text-button { font-size: 13px; }
 .eyebrow, .panel-heading small, .score-block small, .chart-header small, .metabolite-card > small, .sample-flow article > small, .boundary-grid strong { font-size: 11px; }
 .section-heading > p, .hero-lede { font-size: 16px; }.score-block p, .community-wrap .chart-header p, .uncertainty-note p, .species-insights p, .metabolite-card p, .mechanism-copy > p:not(.eyebrow), .sample-flow p, .boundary-grid p, dialog p:not(.eyebrow) { font-size: 13px; }
-.baseline-card span, .food-card strong, .mode-button strong, .chart-header strong, .paper-title strong { font-size: 14px; }.baseline-card small, .food-card small, .mode-button small, .paper-title small, .paper-finding { font-size: 11px; }
+.food-card strong, .mode-button strong, .chart-header strong, .paper-title strong { font-size: 14px; }.food-card small, .mode-button small, .paper-title small, .paper-finding { font-size: 11px; }
 .filter-button, .meal-card button, .meal-card-scores span, .meal-loves > small, .species-insights small, .effect-list header span, .effect-list header b, .species-dialog-stats small, .species-facts small { font-size: 10px; }
 .meal-card > p, .effect-list p, .neuro-caution p { font-size: 12px !important; }.meal-card header strong { font-size: 16px; }.meal-loves span { font-size: 11px; }
 #trajectory-chart text, #community-chart text { font-size: 10px; }.community-node text { display: block; }.community-caption { fill: rgba(244,239,229,.58); font: 11px "DM Mono"; }
 .trust-line, .plant-counter, .delta-pill, .comparison-key, .guild-card .guild-delta, .story-legend b { font-size: 11px; }.repeat-control, .meal-library-button, .site-footer, .site-footer a { font-size: 12px; }
-.distribution-editor summary { font-size: 12px; }.distribution-editor > p { font-size: 11px; }.species-input em, .species-input input { font-size: 11px; }.species-input small { font-size: 10px; }
 .meal-score-strip small { font-size: 11px; }.meal-score-strip span { font-size: 10px; }.meal-score-strip p { font-size: 11px; max-width: 190px; }.empty-diet, .selected-chip span, .selected-chip strong { font-size: 12px; }
 .confidence-row { font-size: 11px; }.path-node { font-size: 12px; }.path-node small { font-size: 10px; }.sample-flow strong, .neuro-caution strong, #species-dialog-content > a { font-size: 11px; }
 .story-step-label, .story-baseline-note, .story-option small { font-size: 11px; }.story-evidence { font-size: 12px; }
@@ -360,12 +357,12 @@ dialog::backdrop { background: rgba(16,43,37,.55); backdrop-filter: blur(5px); }
   .hero-vessel { width: 100%; max-width: 350px; justify-self: center; margin: -5px auto -25px; }
   .eyebrow { font-size: 11px; }
   .story-section { padding: 68px 0 78px; }.story-heading { margin-bottom: 30px; }.story-heading h2 { font-size: 48px; }.story-heading > p:last-child { font-size: 17px; line-height: 1.6; }.story-flow { display: block; border: 0; }.story-step { border: 1px solid var(--line); border-bottom: 0; padding: 20px 16px; }.story-step:last-child { border-bottom: 1px solid var(--line); }.story-step-label { font-size: 12px; }.frequency-head h3 { font-size: 27px; }.frequency-head small, .frequency-head > strong, .frequency-prompt { font-size: 12px; }.frequency-food { padding: 16px 0; }.frequency-food-name strong { font-size: 17px; }.frequency-food-name > span { width: 34px; height: 34px; }.frequency-scale button { height: 44px; font-size: 15px; }.frequency-nav button { min-height: 51px; font-size: 14px; }.story-baseline-note { font-size: 12px; line-height: 1.55; }.story-kind-tabs button { min-height: 50px; font-size: 13px; }.story-options { display: flex; overflow-x: auto; scroll-snap-type: x mandatory; padding-bottom: 6px; }.story-option { flex: 0 0 84%; min-height: 116px; scroll-snap-align: start; padding: 15px; grid-template-columns: 42px 1fr; }.story-option > span { width: 42px; height: 42px; }.story-option strong { font-size: 16px; }.story-option small { font-size: 12px; }.story-evidence { font-size: 13px; }.story-result-heading { display: block; }.story-result-heading h3 { font-size: 26px; }.story-legend { justify-content: flex-start; margin-top: 14px; }.story-legend b { font-size: 11px; }#story-chart text { font-size: 13px; }.story-disclaimer { font-size: 14px; }.story-full-button { min-height: 55px; font-size: 16px; }
-  .story-result-actions { grid-template-columns: 1fr; }.story-share-button { min-height: 57px; font-size: 16px; }.share-dialog { padding: 24px 16px 18px; }.share-dialog h2 { font-size: 38px; }.share-dialog > p:not(.eyebrow):not(.share-status) { font-size: 15px; }.share-preview-wrap { width: min(290px, 82vw); margin: 18px auto; }.share-dialog-actions { display: grid; grid-template-columns: 1fr; }.share-dialog-actions .primary-button, .share-dialog-actions .ghost-button { width: 100%; min-height: 54px; }
+  .story-result-actions { grid-template-columns: 1fr; }.story-share-button { min-height: 57px; font-size: 16px; }.share-dialog { padding: 24px 16px 18px; }.share-dialog h2 { font-size: 34px; }.share-dialog > p:not(.eyebrow):not(.share-status) { font-size: 14px; }.share-preview-wrap { width: 100%; margin: 18px auto; }.share-dialog-actions { display: grid; grid-template-columns: 1fr; }.share-dialog-actions .primary-button, .share-dialog-actions .ghost-button { width: 100%; min-height: 54px; }
   .advanced-lab > summary { min-height: 104px; padding: 18px 16px; }.advanced-lab > summary strong { font-size: 18px; }.advanced-lab > summary small { font-size: 13px; }
   .section-heading { grid-template-columns: 1fr; gap: 25px; margin-bottom: 40px; }.section-heading h2 { font-size: 49px; }
-  .model-section { padding: 80px 0; border-radius: 26px 26px 0 0; }.model-grid { grid-template-columns: 1fr; }.control-panel { border-right: 0; border-bottom: 1px solid rgba(244,239,229,.15); padding: 22px 16px; }.simulation-panel { padding: 22px 14px; }.food-library { max-height: 380px; }.simulation-toolbar { grid-template-columns: auto 1fr auto; }.score-block > div:last-child { display: block; }.score-block small, .panel-heading small { font-size: 11px; }.score-block p { font-size: 13px; }.chart-wrap { padding: 14px 9px; }.chart-header strong { font-size: 15px; }.chart-header small { font-size: 10px; }.legend { display: none; }#trajectory-chart { height: 210px; }.guild-card { min-height: 100px; }.selected-diet { padding: 18px 14px; }.panel-heading h3, .simulation-toolbar h3 { font-size: 22px; }.baseline-card { min-height: 98px; padding: 16px; }.baseline-card span { font-size: 16px; }.baseline-card small { font-size: 12px; }.mode-button { min-height: 82px; padding: 14px; }.mode-button strong { font-size: 15px; }.mode-button small { font-size: 12px; }.food-card { min-height: 112px; }.food-card strong { font-size: 14px; }.food-card small { font-size: 11px; }.filter-button { font-size: 10px; padding: 8px 12px; }.search-box input { height: 54px; font-size: 15px; }.repeat-control { font-size: 12px; }.meal-library-button { min-height: 50px; font-size: 13px; }
-  #distribution-editor { grid-template-columns: 1fr; }.species-input:nth-child(odd) { border-right: 0; }
-  .baseline-options { grid-template-columns: 1fr; }
+  .model-section { padding: 80px 0; border-radius: 26px 26px 0 0; }.model-grid { grid-template-columns: 1fr; }.control-panel { border-right: 0; border-bottom: 1px solid rgba(244,239,229,.15); padding: 22px 16px; }.simulation-panel { padding: 22px 14px; }.food-library { max-height: 380px; }.simulation-toolbar { grid-template-columns: auto 1fr auto; }.score-block > div:last-child { display: block; }.score-block small, .panel-heading small { font-size: 11px; }.score-block p { font-size: 13px; }.chart-wrap { padding: 14px 9px; }.chart-header strong { font-size: 15px; }.chart-header small { font-size: 10px; }.legend { display: none; }#trajectory-chart { height: 210px; }.guild-card { min-height: 100px; }.selected-diet { padding: 18px 14px; }.panel-heading h3, .simulation-toolbar h3 { font-size: 22px; }.mode-button { min-height: 82px; padding: 14px; }.mode-button strong { font-size: 15px; }.mode-button small { font-size: 12px; }.food-card { min-height: 112px; }.food-card strong { font-size: 14px; }.food-card small { font-size: 11px; }.filter-button { font-size: 10px; padding: 8px 12px; }.search-box input { height: 54px; font-size: 15px; }.repeat-control { font-size: 12px; }.meal-library-button { min-height: 50px; font-size: 13px; }
+  .onboarding-baseline-card p strong { font-size: 16px; }.onboarding-baseline-card p small, .onboarding-baseline-summary strong { font-size: 12px; }
+  .species-chart-wrap { overflow-x: auto; }.species-chart-wrap .chart-header { width: 760px; }.species-chart-wrap #species-chart { min-width: 760px; min-height: 610px; }
   .species-insights { grid-template-columns: 1fr; }.species-insights article { min-height: 115px; }
   .meal-score-strip { grid-template-columns: 1fr 1fr; }.meal-score-strip p { grid-column: 1 / -1; max-width: none; }
   .community-wrap { padding: 14px 7px; }.community-wrap .chart-header { display: block; padding: 0 7px; }.community-wrap .chart-header p { margin-top: 7px; font-size: 13px; }.community-node text { display: block; font-size: 12px; }#community-chart { min-height: 0; }
